@@ -34,6 +34,7 @@
  */
 #define PROS_USE_LITERALS
 
+#include "definitions.h"
 #include "api.h"
 
 /**
@@ -52,6 +53,13 @@
 // using namespace pros;
 // using namespace pros::literals;
 // using namespace okapi;
+
+//Define motor groups with gear ratios
+pros::MotorGroup leftMotors({FRONT_LEFT_PORT * FRONT_LEFT_DIRECTION , MID_LEFT_PORT * MID_LEFT_DIRECTION, BACK_LEFT_PORT * BACK_LEFT_DIRECTION}, pros::MotorGearset::Blue);/*Blue gearset means the motor spins at a max of 600 rpm*/
+pros::MotorGroup rightMotors({FRONT_RIGHT_PORT * FRONT_RIGHT_DIRECTION, MID_RIGHT_PORT * MID_RIGHT_DIRECTION, BACK_RIGHT_PORT * BACK_RIGHT_PORT}, pros::motorGearset::Blue);
+
+
+
 
 /**
  * Prototypes for the competition control tasks are redefined here to ensure
