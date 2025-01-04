@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "lemlib/api.hpp"
+//#include "../include/definitons.h"
 
 /**
  * A callback function for LLEMU's center button.
@@ -32,7 +33,7 @@ void on_center_button() {
 void initialize() {
 	pros::lcd::initialize();
 	pros::lcd::set_text(1, "Hello PROS User!");
-
+	pros::Task screen(showEncoderDetails);
 	pros::lcd::register_btn1_cb(on_center_button);
 }
 
