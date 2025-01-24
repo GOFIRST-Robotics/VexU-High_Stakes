@@ -1,3 +1,6 @@
+//This is code for the 24" Robot, for the 15" go to Thing Two
+
+
 /**
  * \file main.h
  *
@@ -33,9 +36,9 @@
  * For instance, you can do `4_mtr = 50` to set motor 4's target velocity to 50
  */
 #define PROS_USE_LITERALS
-
 #include "definitions.h"
 #include "api.h"
+#include "drive.h"
 
 /**
  * You should add more #includes here
@@ -54,14 +57,8 @@
 // using namespace pros::literals;
 // using namespace okapi;
 
-//Define motor groups with gear ratios
-pros::MotorGroup leftMotors({FRONT_LEFT_PORT * FRONT_LEFT_DIRECTION , MID_LEFT_PORT * MID_LEFT_DIRECTION, BACK_LEFT_PORT * BACK_LEFT_DIRECTION}, pros::MotorGearset::Blue);/*Blue gearset means the motor spins at a max of 600 rpm*/
-pros::MotorGroup rightMotors({FRONT_RIGHT_PORT * FRONT_RIGHT_DIRECTION, MID_RIGHT_PORT * MID_RIGHT_DIRECTION, BACK_RIGHT_PORT * BACK_RIGHT_PORT}, pros::motorGearset::Blue);
-
-
-
-
-/**
+robotDrive driveSystem;
+/** 
  * Prototypes for the competition control tasks are redefined here to ensure
  * that they can be called from user code (i.e. calling autonomous from a
  * button press in opcontrol() for testing purposes).
