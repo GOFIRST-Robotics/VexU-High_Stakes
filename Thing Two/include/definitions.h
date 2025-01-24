@@ -3,7 +3,7 @@
 #include "api.h"
 
 
-
+//TODO: settings imported from thing one and may not reflect actual bot. 
 #define CHASIS_LENGTH 1
 #define TRACK_WIDTH 1
 #define GEAR_RATIO 1
