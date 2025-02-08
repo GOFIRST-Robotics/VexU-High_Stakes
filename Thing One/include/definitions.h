@@ -33,3 +33,23 @@
 #define VERTICAL_WHEEL_OFFSET 0 //measured in inches left is negative, right is positive
 #define HORIZONTAL_WHEEL_OFFSET 0 //measured in inches front is positive, back is negative
 
+
+//Climber defs
+#define CLIMB_MOTOR_PORT 14
+#define CLIMB_MOTOR_GEAR_RATIO pros::v5::MotorGearset::green
+#define CLIMB_MOTOR_SPEED 1
+
+//Intake definitions
+#define INTAKE_MOTOR_PORT 15
+#define INTAKE_MOTOR_GEAR_RATiO pros::v5::MotorGearset::green
+#define INTAKE_MOTOR_SPEED 0.4
+
+
+
+
+
+
+//Control definitions
+#define INTAKE_BUTTON pros::E_CONTROLLER_DIGITAL_L1 
+#define CLIMB_EXTEND_BUTTON pros::E_CONTROLLER_DIGITAL_R1
+#define CLIMB_RETRACT_BUTTON pros::E_CONTROLLER_DIGITAL_R2

@@ -39,6 +39,9 @@
 #include "definitions.h"
 #include "api.h"
 #include "drive.h"
+#include "controller.h"
+#include "climb.h"
+#include "intake.h"
 
 /**
  * You should add more #includes here

@@ -34,6 +34,7 @@ void initialize() {
 	pros::lcd::initialize();
 	pros::lcd::set_text(1, "Hello PROS User!");
 	driveSystem.init();
+	intake::init();
 	pros::lcd::register_btn1_cb(on_center_button);
 }
 
@@ -89,6 +90,7 @@ void opcontrol() {
 		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);  // Prints status of the emulated screen LCDs
 
 		driveSystem.teleopRoutine();
+		intake::periodic();
 
 		
 	}
