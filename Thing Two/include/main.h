@@ -1,4 +1,4 @@
-//This is code for the 24" Robot, for the 15" go to Thing Two
+//This is code for the 15" Robot, for the 15" go to Thing One
 
 
 /**
@@ -39,6 +39,9 @@
 #include "definitions.h"
 #include "api.h"
 #include "drive.h"
+#include "controller.h"
+#include "climb.h"
+#include "intake.h"
 
 /**
  * You should add more #includes here
