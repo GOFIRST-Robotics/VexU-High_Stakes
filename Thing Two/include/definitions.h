@@ -29,11 +29,6 @@
 #define BACK_RIGHT_DIRECTION 1
 
 
-//Offsets have not been set yet!  Do this later with help from https://lemlib.readthedocs.io/en/stable/tutorials/2_configuration.html
-#define VERTICAL_WHEEL_OFFSET 0 //measured in inches left is negative, right is positive
-#define HORIZONTAL_WHEEL_OFFSET 0 //measured in inches front is positive, back is negative
-
-
 //Climber defs
 #define CLIMB_MOTOR_PORT 14
 #define CLIMB_MOTOR_GEAR_RATIO pros::v5::MotorGearset::green

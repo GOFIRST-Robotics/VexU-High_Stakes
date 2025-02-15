@@ -19,19 +19,11 @@ class robotDrive {
         // create IMUs
         pros::Imu imu{IMU_PORT_ONE};
 
-        //Create rotaton sensors
-        pros::Rotation hPod{HORIZONTAL_WHEEL};
-        pros::Rotation vPod{VERTICAL_WHEEL};
-
-        //Instantiate tracking wheels
-        lemlib::TrackingWheel horizontalTrackingWheel{&hPod, WHEEL_DIAMETER, HORIZONTAL_WHEEL_OFFSET};
-        lemlib::TrackingWheel verticalTrackingWheel{&vPod, WHEEL_DIAMETER, VERTICAL_WHEEL_OFFSET};
-
 
         //Instantiate odometry tracking
-        lemlib::OdomSensors sensors{&verticalTrackingWheel, // Vertical tracking wheel 1, set to null
+        lemlib::OdomSensors sensors{nullptr,
             nullptr, //vertical tracking wheel 2 which is not used with imu
-            &horizontalTrackingWheel, // horizontal tracking wheel 1
+            nullptr, // IME so null
             nullptr, // horizontal tracking wheel 2 which is not used with imu
             &imu
         };

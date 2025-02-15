@@ -7,8 +7,8 @@ void robotDrive::showEncoderDetails() {
     
     while (true) { // infinite loop
         // print measurements from the rotation sensor
-        pros::lcd::print(1, "Vertical Sensor: %i", vPod.get_position());
-        pros::lcd::print(2, "Horizontal Sensor: %i", hPod.get_position());
+        //pros::lcd::print(1, "Vertical Sensor: %i", vPod.get_position());
+        //pros::lcd::print(2, "Horizontal Sensor: %i", hPod.get_position());
         pros::lcd::print(3, "X: %f", chassis.getPose().x);
         pros::lcd::print(4, "Y: %f", chassis.getPose().y);
         pros::lcd::print(5, "Theta: %f", chassis.getPose().theta);
