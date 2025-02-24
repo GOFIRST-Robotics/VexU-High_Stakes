@@ -1,9 +1,82 @@
 
-//This is code for the 24" Robot, for the 15" go to Thing Two
+//This is code for the 15" Robot, for the 24" go to Thing One
 
 #include "main.h"
 #include "lemlib/api.hpp"
 //#include "../include/definitons.h"
+
+pros::Controller controller(pros::E_CONTROLLER_MASTER);
+
+
+// left motor group
+pros::MotorGroup left_motor_group({-16, -14, 15}, pros::MotorGears::blue);
+// right motor group
+pros::MotorGroup right_motor_group({18, -19, 20}, pros::MotorGears::blue);
+
+pros::MotorGroup intake({6,7}, pros::MotorGears::blue);
+
+pros::Motor ladyBrown(-10);
+pros::Motor remy(9);
+
+//rotation 1
+
+pros::ADIDigitalOut clamp('A');
+
+
+// drivetrain settings
+lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
+                              &right_motor_group, // right motor group
+                              11.3, // 11.3 inch track width
+                              lemlib::Omniwheel::NEW_325, // using new 4" omnis
+                              480, // drivetrain rpm is 480
+                              2 // horizontal drift is 2 (for now)
+);
+
+// imu
+pros::Imu imu(11);
+// horizontal tracking wheel encoder
+
+
+// odometry settings
+lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
+                            nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
+                            nullptr, // horizontal tracking wheel 1
+                            nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
+                            &imu // inertial sensor
+);
+
+// lateral PID controller
+lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              3, // derivative gain (kD)
+                                              3, // anti windup
+                                              1, // small error range, in inches
+                                              100, // small error range timeout, in milliseconds
+                                              3, // large error range, in inches
+                                              500, // large error range timeout, in milliseconds
+                                              20 // maximum acceleration (slew)
+);
+
+// angular PID controller
+lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              10, // derivative gain (kD)
+                                              3, // anti windup
+                                              1, // small error range, in degrees
+                                              100, // small error range timeout, in milliseconds
+                                              3, // large error range, in degrees
+                                              500, // large error range timeout, in milliseconds
+                                              0 // maximum acceleration (slew)
+);
+
+// create the chassis
+lemlib::Chassis chassis(drivetrain, // drivetrain settings
+                        lateral_controller, // lateral PID settings
+                        angular_controller, // angular PID settings
+                        sensors // odometry sensors
+);
+
+
 
 /**
  * A callback function for LLEMU's center button.
@@ -14,15 +87,7 @@
 
 
 
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
+
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -31,10 +96,8 @@ void on_center_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
-	driveSystem.init();
-	pros::lcd::register_btn1_cb(on_center_button);
+    chassis.calibrate(); // calibrate sensors
+
 }
 
 /**
@@ -66,7 +129,9 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -81,15 +146,64 @@ void autonomous() {}
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-void opcontrol() {
 
-	while (true) {
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		                 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		                 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);  // Prints status of the emulated screen LCDs
-
-		driveSystem.teleopRoutine();
-
-		
+void setIntake() {
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+		intake.move_voltage(-12000);
 	}
+	else {
+		intake.move_voltage(10000);
+	}
+}
+
+void setClamp() {
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+		clamp.set_value(false);
+	}
+	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)){
+		clamp.set_value(true);
+	}
+}
+
+void setRemy() {
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+		remy.move_voltage(7000);
+	}
+	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
+		remy.move_voltage(-7000);
+	}
+    else {
+        remy.move_voltage(-1200);
+    }
+}
+
+void setlb() {
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+		ladyBrown.move_voltage(12000);
+	}
+	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
+		ladyBrown.move_voltage(-10000);
+	}
+    else {
+        ladyBrown.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+        ladyBrown.move_velocity(0);
+
+    }
+}
+
+void opcontrol() {
+    while (true) {
+        // get left y and right y positions
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+        chassis.tank(leftY, rightY);
+
+		setIntake();
+		setClamp();
+        setRemy();
+        setlb();
+
+        // delay to save resources
+        pros::delay(10);
+    }
 }

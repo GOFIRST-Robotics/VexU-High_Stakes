@@ -1,5 +1,6 @@
 #pragma once
 #include "definitions.h"
+//#include "main.h"
 
 
 
@@ -29,9 +30,9 @@ class robotDrive {
 
 
         //Instantiate odometry tracking
-        lemlib::OdomSensors sensors{&verticalTrackingWheel, // Vertical tracking wheel 1, set to null
+        lemlib::OdomSensors sensors{nullptr, // Vertical tracking wheel 1, set to null
             nullptr, //vertical tracking wheel 2 which is not used with imu
-            &horizontalTrackingWheel, // horizontal tracking wheel 1
+            nullptr, // horizontal tracking wheel 1
             nullptr, // horizontal tracking wheel 2 which is not used with imu
             &imu
         };
