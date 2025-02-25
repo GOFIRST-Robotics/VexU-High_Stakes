@@ -3,9 +3,12 @@
 
 #include "main.h"
 #include "lemlib/api.hpp"
+#include "cmath"
 //#include "../include/definitons.h"
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
+
+const float DEGREE_TO_CENTIDEGREE = 100;
 
 
 // left motor group
@@ -15,7 +18,13 @@ pros::MotorGroup right_motor_group({18, -19, 20}, pros::MotorGears::blue);
 
 pros::MotorGroup intake({6,7}, pros::MotorGears::blue);
 
+//LadyBrown
 pros::Motor ladyBrown(-10);
+pros::Rotation ladyJointSensor(11);
+const int LADY_BROWN_START_ANGLE = -100 * DEGREE_TO_CENTIDEGREE; // 0 is straight up
+const int LADY_BROWN_MAX_ANGLE = 160 * DEGREE_TO_CENTIDEGREE;
+const int LADY_BROWN_UP_ANGLE = -30 * DEGREE_TO_CENTIDEGREE;
+
 pros::Motor remy(9);
 
 //rotation 1
@@ -98,6 +107,9 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 void initialize() {
     chassis.calibrate(); // calibrate sensors
 
+    ladyJointSensor.reset_position();
+    ladyJointSensor.set_position(LADY_BROWN_START_ANGLE);
+
 }
 
 /**
@@ -147,61 +159,221 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-void setIntake() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
-		intake.move_voltage(-12000);
-	}
-	else {
-		intake.move_voltage(10000);
-	}
+
+// ----------------- Intake stuffs -----------------
+void in_take() {
+    intake.move_voltage(10000);
 }
 
-void setClamp() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-		clamp.set_value(false);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)){
-		clamp.set_value(true);
-	}
+void out_take() {
+    intake.move_voltage(-12000);
 }
 
-void setRemy() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-		remy.move_voltage(7000);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
-		remy.move_voltage(-7000);
-	}
-    else {
-        remy.move_voltage(-1200);
-    }
+void stop_take() {
+    intake.move_voltage(0);
 }
 
-void setlb() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
-		ladyBrown.move_voltage(12000);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-		ladyBrown.move_voltage(-10000);
-	}
-    else {
-        ladyBrown.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-        ladyBrown.move_velocity(0);
 
-    }
+// ----------------- Clamp stuffs -----------------
+int clamp_count = 0;
+bool clamped = false;
+
+void clamp_down() {
+    clamp.set_value(true);
 }
 
+void clamp_up() {
+    clamp.set_value(false);
+}
+
+
+// ----------------- Remy stuffs -----------------
+void remi_down() {
+    remy.move_voltage(7000);
+}
+
+void remi_up() {
+    remy.move_voltage(-7000);
+}
+
+void remi_stop() {
+    remy.move_voltage(-1200);
+}
+
+
+// ----------------- Lady Brown stuffs -----------------
+int lady_state = 0;
+#define LADY_START 0
+#define LADY_OUT 1
+#define LADY_IN 2
+#define LADY_UP 3
+#define LADY_JOY 4
+
+#define LADY_JOY_DEADZONE 70
+
+void lady_out() {
+    ladyBrown.move_voltage(10000);
+}
+void lady_out_slow() {
+    ladyBrown.move_voltage(5000);
+}
+
+void lady_in() {
+    ladyBrown.move_voltage(-8000);
+}
+void lady_in_slow() {
+    ladyBrown.move_voltage(-5000);
+}
+
+void lady_up() {
+    // TODO
+}
+
+void lady_PF_move() {
+
+}
+
+void lady_stop() {
+    ladyBrown.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    ladyBrown.move_velocity(0);
+}
+
+
+// ----------------- teleop -----------------
 void opcontrol() {
     while (true) {
-        // get left y and right y positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
-        chassis.tank(leftY, rightY);
 
-		setIntake();
-		setClamp();
-        setRemy();
-        setlb();
+        // ----------------- Drive stuffs -----------------
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+        float mult = (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) ? 0.5 : 1.0;
+        chassis.arcade(leftY * mult, rightX * mult);
+
+
+        // ----------------- Intake stuffs -----------------
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+            in_take();
+        }
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+            out_take();
+        }
+        else {
+            stop_take();
+        }
+
+
+        // ----------------- Clamp stuffs -----------------
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1) & clamp_count > 50) {
+            if (!clamped) {
+                clamp_down();
+                clamped = true;
+            }
+            else {
+                clamp_up();
+                clamped = false;
+            }
+
+            clamp_count = 0;
+        }
+        else {
+            clamp_count++;
+        }
+
+        
+        // ----------------- Remy stuffs -----------------
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+            remi_down();
+        }
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+            remi_up();
+        }
+        else { 
+            remi_stop();
+        }
+
+
+        // ----------------- Lady Brown stuffs -----------------
+        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+
+        switch(lady_state) {
+            case LADY_START:
+                lady_state = LADY_IN;
+                break;
+
+            case LADY_UP:
+                // TODO: PIDF to bring ladybrown up
+
+                lady_stop();
+
+                // Check for moves to other states
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_OUT;
+                }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                    lady_state = LADY_IN;
+                }
+                else if (abs(rightY) > LADY_JOY_DEADZONE) {
+                    lady_state = LADY_JOY;
+                }
+
+                break;
+
+            case LADY_OUT:
+                
+                lady_out();
+
+                // Check for moves to other states
+                if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_UP;
+                }
+
+                break;
+
+            case LADY_IN:
+
+                // Move if button is held
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
+                    lady_in();
+                }
+                else {
+                    lady_stop();
+                }
+
+                // Check for moves to other states
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_OUT;
+                }
+                else if (abs(rightY) > LADY_JOY_DEADZONE) {
+                    lady_state = LADY_JOY;
+                }
+
+                break;
+            
+            case LADY_JOY:
+
+                // Move based on Joy Inputs
+                if (rightY > LADY_JOY_DEADZONE) {
+                    lady_out_slow();
+                }
+                else if (rightY < -LADY_JOY_DEADZONE) {
+                    lady_in_slow();
+                }
+                else {
+                    lady_stop();
+                }
+
+                // Check for moves to other states
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_OUT;
+                }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                    lady_state = LADY_IN;
+                }
+                break;
+        }
+        
+
 
         // delay to save resources
         pros::delay(10);
