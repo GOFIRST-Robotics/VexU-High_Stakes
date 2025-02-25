@@ -135,42 +135,47 @@ void autonomous() {
 	chassis.waitUntilDone();
 	rushMech.set_value(false);
 
-
-
-	
-
 	chassis.moveToPoint(43, 105, 2000, {.forwards = false}); //Pull goal back
 	chassis.waitUntilDone();
 	rushMech.set_value(true);
-	
-	
-
-	chassis.turnToHeading(-117, 2000);
-}
-	/*
-
-	chassis.moveToPoint(46, 106, 500, {.forwards = false, .maxSpeed = 50});	//Grab goal
+	pros::delay(1500);
+	chassis.turnToHeading(-107, 2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});
 	clamp.set_value(false);
+	chassis.moveToPoint(63, 120, 2000, {.forwards = false, .maxSpeed = 50});	//Grab goal
 	chassis.waitUntilDone();
-	intake.move_voltage(8000);
+	rushMech.set_value(false);
+	clamp.set_value(true);
+	pros::delay(700);
 
-	chassis.moveToPoint(24, 120, 500);	//Ring stack
+	intake.move_voltage(9500);
+	chassis.turnToHeading(-70, 2000);
 
-	chassis.moveToPoint(14, 72, 500); //Ring stack
+	chassis.moveToPoint(45, 120, 2000, {.maxSpeed = 50});	//Ring stack
 	pros::delay(500);
-	clamp.set_value(false);
-	intake.move_voltage(5000);
-	chassis.waitUntilDone();
 
-	chassis.turnToHeading(90, 500);
+	chassis.moveToPoint(28, 118, 2000, {.maxSpeed = 60});	//Ring stack
+	chassis.moveToPoint(33, 118, 2000, {.forwards = false});	//Ring stack
+	chassis.turnToHeading(180, 2000);
+
+	chassis.turnToPoint(10,72,2000);
+	pros::delay(100);
+	chassis.moveToPoint(15, 74, 2000, {.maxSpeed = 50});	//Ring stack
+	pros::delay(800);
+	clamp.set_value(false);
+
+	chassis.waitUntilDone();
+	pros::delay(200);
+	intake.move_voltage(0);
+	chassis.turnToHeading(92,2000);
+	chassis.moveToPoint(6, 74, 2000, {.forwards = false, .maxSpeed = 50});	//Ring stack
+	chassis.waitUntilDone();
+	intake.move_voltage(9500);
+	pros::delay(2000);
 	intake.move_voltage(0);
 
-	chassis.moveToPoint(2, 73, 500); //Alliance stake
-	chassis.waitUntilDone();
-	intake.move_voltage(8000);
-}
+	chassis.moveToPoint(32, 74, 2000, {.maxSpeed = 70});	//move away from stake
+	}
 
-*/
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -187,44 +192,49 @@ void autonomous() {
  */
 
 void setIntake() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-		intake.move_voltage(-12000);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)){
-		intake.move_voltage(9500);
-	}
-	else {
-		intake.move_voltage(0);
-	}
-}
-
-int clampCheck = 0;
-int clampStatus = 0;
-void setClamp() {
     if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-		if (clampStatus == 0 && clampCheck == 0) {
-			clampCheck = 1;
-			clampStatus = 1;
-			clamp.set_value(true);
-		}
-		else if (clampStatus == 1 && clampCheck == 0) {
-			clampCheck = 1;
-			clampStatus = 0;
-			clamp.set_value(false);
-		}
-	else {
-		clampCheck = 0;
-	}
-	}
+        intake.move_voltage(-12000);
+    }
+    else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)){
+        intake.move_voltage(9500);
+    }
+    else {
+        intake.move_voltage(0);
+    }
 }
 
-void setRushMech() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-		rushMech.set_value(true);
-	}
-	else {
-		rushMech.set_value(false);
-	}
+bool clampToggle = false;
+bool clampLock = false;
+void setClamp1() {
+    if (clampToggle) {
+        clamp.set_value(true);
+    } else {
+        clamp.set_value(false);
+    }
+    
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+        if (!clampLock) {
+            clampToggle = !clampToggle;
+            clampLock = true;
+        } 
+    } else { clampLock = false; }
+}
+
+bool rushToggle = false;
+bool rushLock = false;
+void setRushMech1() {
+    if (rushToggle) {
+        rushMech.set_value(true);
+    } else {
+        rushMech.set_value(false);
+    }
+    
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+        if (!rushLock) {
+            rushToggle = !rushToggle;
+            rushLock = true;
+        } 
+    } else { rushLock = false; }
 }
 
 void opcontrol() {
@@ -235,11 +245,11 @@ void opcontrol() {
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         //chassis.tank(leftY, rightY);
-		chassis.tank(leftY, rightY);
+        chassis.arcade(leftY, rightX);
 
-		setIntake();
-		setClamp();
-		setRushMech();
+        setIntake();
+        setClamp1();
+        setRushMech1();
 
         // delay to save resources
         pros::delay(10);

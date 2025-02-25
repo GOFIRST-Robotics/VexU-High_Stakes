@@ -297,7 +297,9 @@
         "version": "8.3.8"
       }
     },
-    "upload_options": {},
+    "upload_options": {
+      "description": "Match Code"
+    },
     "use_early_access": false
   }
 }

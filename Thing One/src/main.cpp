@@ -26,7 +26,7 @@ pros::ADIDigitalOut clamp('A');
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
                               &right_motor_group, // right motor group
-                              11.3, // 11.3 inch track width
+                              10.8, // 11.3 inch track width
                               lemlib::Omniwheel::NEW_325, // using new 4" omnis
                               480, // drivetrain rpm is 480
                               2 // horizontal drift is 2 (for now)
@@ -46,9 +46,9 @@ lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
+lemlib::ControllerSettings lateral_controller(5.5, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              3, // derivative gain (kD)
+                                              0, // derivative gain (kD)
                                               3, // anti windup
                                               1, // small error range, in inches
                                               100, // small error range timeout, in milliseconds
@@ -58,9 +58,9 @@ lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
+lemlib::ControllerSettings angular_controller(1, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              10, // derivative gain (kD)
+                                              4, // derivative gain (kD)
                                               3, // anti windup
                                               1, // small error range, in degrees
                                               100, // small error range timeout, in milliseconds
@@ -129,9 +129,96 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {
 
+void rushAuto() {
+    remy.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+    chassis.setPose(16, 44.5, 112);
+
+    chassis.moveToPoint(56.5, 32, 2000);
+    chassis.turnToHeading(170, 2000);
+    //chassis.swingToPoint(50, 35, DriveSide::RIGHT, 1000, {.forwards = false});
+
+
+    chassis.moveToPoint(44, 33, 2000, {.forwards = false});
+    chassis.waitUntilDone();
+    remy.move_voltage(10000);
+
+    chassis.turnToPoint(56, 40, 2000);
+    remy.move_voltage(-7000);
+
+    chassis.moveToPoint(56, 40, 2000, {.maxSpeed = 50});
+    chassis.waitUntilDone();
+    ladyBrown.move_voltage(10000);
+    pros::delay(2000);
+    ladyBrown.move_voltage(1000);
 }
+
+void goalAutoBlue() {
+    chassis.setPose(21,60,-170);
+    //ladyBrown.move_voltage(6000);
+    chassis.moveToPoint(22,65,2000, {.forwards = false});   //Move to grab goal
+    chassis.waitUntilDone();
+    clamp.set_value(true);
+    pros::delay(2000);
+    intake.move_voltage(8000);
+    pros::delay(2000);
+    intake.move_voltage(0);
+    ladyBrown.move_voltage(-10000);
+    //clamp.set_value(false);
+    pros::delay(2000);
+    remy.move_voltage(-3000);
+ladyBrown.move_voltage(-1000);
+
+
+    chassis.moveToPoint(28,49, 2000, {.maxSpeed = 70}); //Reposition to align with bar
+    chassis.waitUntilDone();
+    ladyBrown.move_voltage(0);
+    chassis.moveToPoint(36,36, 2000, {.maxSpeed = 60}); //Move to bar
+    chassis.turnToPoint(55,55, 2000, {.maxSpeed = 60});
+
+    chassis.moveToPoint(55,55, 2000, {.maxSpeed = 60}); //Move to touch bar
+    chassis.waitUntilDone();
+    ladyBrown.move_voltage(10000);
+    pros::delay(2000);
+    ladyBrown.move_voltage(1000);
+}
+
+void goalAutoRed() {
+    chassis.setPose(-21,60,170);
+    //ladyBrown.move_voltage(6000);
+    chassis.moveToPoint(-26,75,2000, {.forwards = false, .maxSpeed = 60});  //Move to grab goal
+    chassis.waitUntilDone();
+    clamp.set_value(true);
+    pros::delay(2000);
+    intake.move_voltage(8000);
+    pros::delay(2000);
+    intake.move_voltage(0);
+    ladyBrown.move_voltage(-10000);
+    //clamp.set_value(false);
+    pros::delay(2000);
+    remy.move_voltage(-3000);
+ladyBrown.move_voltage(-1000);
+
+
+    chassis.moveToPoint(-28,49, 2000, {.maxSpeed = 70});    //Reposition to align with bar
+    chassis.waitUntilDone();
+    ladyBrown.move_voltage(0);
+    chassis.moveToPoint(-36,36, 2000, {.maxSpeed = 60});    //Move to bar
+    chassis.turnToPoint(-55,55, 2000, {.maxSpeed = 60});
+
+    chassis.moveToPoint(-55,55, 2000, {.maxSpeed = 60});    //Move to touch bar
+    chassis.waitUntilDone();
+    ladyBrown.move_voltage(10000);
+    pros::delay(2000);
+    ladyBrown.move_voltage(1000);
+}
+
+void autonomous() {
+    goalAutoBlue();
+}
+
+
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -151,9 +238,12 @@ void setIntake() {
     if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
 		intake.move_voltage(-12000);
 	}
-	else {
+	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
 		intake.move_voltage(10000);
 	}
+    else {
+        intake.move_voltage(0);
+    }
 }
 
 void setClamp() {
@@ -207,3 +297,4 @@ void opcontrol() {
         pros::delay(10);
     }
 }
+
