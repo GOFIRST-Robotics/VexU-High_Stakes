@@ -20,10 +20,12 @@ pros::MotorGroup intake({6,7}, pros::MotorGears::blue);
 
 //LadyBrown
 pros::Motor ladyBrown(-10);
-pros::Rotation ladyJointSensor(11);
-const int LADY_BROWN_START_ANGLE = -100 * DEGREE_TO_CENTIDEGREE; // 0 is straight up
-const int LADY_BROWN_MAX_ANGLE = 160 * DEGREE_TO_CENTIDEGREE;
-const int LADY_BROWN_UP_ANGLE = -30 * DEGREE_TO_CENTIDEGREE;
+pros::Rotation ladyJointSensor(12);
+const int LADY_BROWN_START_ANGLE = 100; // 100 is all the way back
+const int LADY_BROWN_MAX_ANGLE = 300;
+const int LADY_BROWN_MIN_ANGLE = 90;
+const int LADY_BROWN_SCORE_ANGLE = 270;
+const int LADY_BROWN_UP_ANGLE = 170;
 
 pros::Motor remy(9);
 
@@ -108,7 +110,7 @@ void initialize() {
     chassis.calibrate(); // calibrate sensors
 
     ladyJointSensor.reset_position();
-    ladyJointSensor.set_position(LADY_BROWN_START_ANGLE);
+    ladyJointSensor.set_reversed(true);
 
 }
 
@@ -162,7 +164,7 @@ void autonomous() {
 
 // ----------------- Intake stuffs -----------------
 void in_take() {
-    intake.move_voltage(10000);
+    intake.move_voltage(8000);
 }
 
 void out_take() {
@@ -209,28 +211,54 @@ int lady_state = 0;
 #define LADY_UP 3
 #define LADY_JOY 4
 
-#define LADY_JOY_DEADZONE 70
+#define LADY_JOY_DEADZONE 60
+
+int get_lady_angle() {
+    // returns in degrees from straight up
+    return float(ladyJointSensor.get_angle()) / 100;
+}
+
+void lady_PF_move(float targ) {
+    if (targ > LADY_BROWN_MAX_ANGLE) {
+        targ = LADY_BROWN_MAX_ANGLE;
+    }
+    else if (targ < LADY_BROWN_MIN_ANGLE) {
+        targ = LADY_BROWN_MAX_ANGLE;
+    }
+
+    float pos = get_lady_angle();
+
+    float pow = 0;
+
+    float kP = 0.01;
+    pow += kP * (targ - pos);
+
+    controller.print(0, 0, "%f, %f", pos, targ - pos);
+
+    float kF = 0.06;
+    pow += kF * (sin((pos * (3.14159/180))));
+
+    ladyBrown.move_voltage(pow * 12000);
+}
 
 void lady_out() {
     ladyBrown.move_voltage(10000);
-}
-void lady_out_slow() {
-    ladyBrown.move_voltage(5000);
 }
 
 void lady_in() {
     ladyBrown.move_voltage(-8000);
 }
-void lady_in_slow() {
-    ladyBrown.move_voltage(-5000);
+
+void lady_move(int percent) {
+    ladyBrown.move_voltage(7000 * (percent/100));
 }
 
 void lady_up() {
-    // TODO
+    lady_PF_move(LADY_BROWN_UP_ANGLE);
 }
 
-void lady_PF_move() {
-
+void lady_score() {
+    lady_PF_move(LADY_BROWN_SCORE_ANGLE);
 }
 
 void lady_stop() {
@@ -302,9 +330,8 @@ void opcontrol() {
                 break;
 
             case LADY_UP:
-                // TODO: PIDF to bring ladybrown up
 
-                lady_stop();
+                lady_up();
 
                 // Check for moves to other states
                 if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
@@ -321,7 +348,7 @@ void opcontrol() {
 
             case LADY_OUT:
                 
-                lady_out();
+                lady_score();
 
                 // Check for moves to other states
                 if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
@@ -353,11 +380,8 @@ void opcontrol() {
             case LADY_JOY:
 
                 // Move based on Joy Inputs
-                if (rightY > LADY_JOY_DEADZONE) {
-                    lady_out_slow();
-                }
-                else if (rightY < -LADY_JOY_DEADZONE) {
-                    lady_in_slow();
+                if (abs(rightY) > LADY_JOY_DEADZONE) {
+                    lady_move(rightY);
                 }
                 else {
                     lady_stop();
