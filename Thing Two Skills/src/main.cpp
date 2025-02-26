@@ -206,8 +206,10 @@ void autonomous() {
 	chassis.moveToPoint(76,73,2000, {.maxSpeed = 60});	//Drive into center
 	chassis.moveToPoint(68,76,2000, {.maxSpeed = 60});	//Reposition in center
 
-	chassis.swingToHeading(0, DriveSide::RIGHT, 500, {.maxSpeed = 60});	//Sweep to pick up rings
-	chassis.swingToHeading(170, DriveSide::RIGHT, 500, {.maxSpeed = 60});	//Sweep to pick up rings
+	chassis.swingToHeading(0, DriveSide::RIGHT, 1000, {.maxSpeed = 60});	//Sweep to pick up rings
+	chassis.swingToHeading(170, DriveSide::RIGHT, 1000, {.maxSpeed = 60});	//Sweep to pick up rings
+    	chassis.swingToHeading(20, DriveSide::RIGHT, 1000, {.maxSpeed = 60});	//Sweep to pick up rings
+
 	}
 
 
