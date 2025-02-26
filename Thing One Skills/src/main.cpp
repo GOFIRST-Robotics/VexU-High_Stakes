@@ -199,7 +199,26 @@ void autonomous() {
     clamp.set_value(false);
     pros::delay(2000);
 
-        chassis.moveToPoint(20,20,2000,{.forwards = false, .maxSpeed = 40});
+    intake.move_voltage(0);
+
+    //chassis.moveToPoint(20,20,2000,{.maxSpeed = 40});   //Move away from goal
+
+    ladyBrown.move_voltage(-8000);
+    chassis.moveToPoint(72,11,2000,{.maxSpeed = 40});
+    intake.move_voltage(8000);
+    chassis.waitUntilDone();
+    ladyBrown.move_voltage(0);
+    chassis.moveToPoint(77,11,2000,{.maxSpeed = 40});
+    chassis.moveToPoint(72,11,2000,{.forwards = false, .maxSpeed = 40});
+
+    chassis.turnToHeading(180, 2000, {.maxSpeed = 40});
+    chassis.moveToPoint(72,7,2000,{.maxSpeed = 40});
+
+    ladyBrown.move_voltage(11000);
+    pros::delay(2500);
+    ladyBrown.move_voltage(0);
+    chassis.moveToPoint(72,25,2000,{.forwards = false, .maxSpeed = 40});
+
 
 
 }
