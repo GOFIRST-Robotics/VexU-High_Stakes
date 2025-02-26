@@ -139,37 +139,37 @@ void autonomous() {
 	chassis.waitUntilDone();
 	rushMech.set_value(true);
 	pros::delay(1500);
-	chassis.turnToHeading(-107, 2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});
+	chassis.turnToHeading(-107, 2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});	//Turn to have back face goal
 	clamp.set_value(false);
 	chassis.moveToPoint(63, 120, 2000, {.forwards = false, .maxSpeed = 50});	//Grab goal
 	chassis.waitUntilDone();
 	rushMech.set_value(false);
-	clamp.set_value(true);
+	clamp.set_value(true);	//Grab goal
 	pros::delay(700);
 
 	intake.move_voltage(9500);
 	chassis.turnToHeading(-70, 2000);
 
-	chassis.moveToPoint(45, 120, 2000, {.maxSpeed = 50});	//Ring stack
+	chassis.moveToPoint(45, 120, 2000, {.maxSpeed = 50});	//Ring stack 1
 	pros::delay(500);
 
-	chassis.moveToPoint(28, 118, 2000, {.maxSpeed = 60});	//Ring stack
-	chassis.moveToPoint(33, 118, 2000, {.forwards = false});	//Ring stack
+	chassis.moveToPoint(28, 118, 2000, {.maxSpeed = 60});	//Ring stack 2
+	chassis.moveToPoint(33, 118, 2000, {.forwards = false});	//Back away from ring stack
 	chassis.turnToHeading(180, 2000);
 
 	chassis.turnToPoint(10,72,2000);
 	pros::delay(100);
-	chassis.moveToPoint(15, 74, 2000, {.maxSpeed = 50});	//Ring stack
+	chassis.moveToPoint(15, 74, 2000, {.maxSpeed = 50});	//Ring stack 3
 	pros::delay(800);
 	clamp.set_value(false);
 
 	chassis.waitUntilDone();
 	pros::delay(200);
 	intake.move_voltage(0);
-	chassis.turnToHeading(92,2000);
-	chassis.moveToPoint(6, 74, 2000, {.forwards = false, .maxSpeed = 50});	//Ring stack
+	chassis.turnToHeading(92,2000);	//Turn to have back face alliance stake
+	chassis.moveToPoint(6, 74, 2000, {.forwards = false, .maxSpeed = 50});	//Move to alliance stake
 	chassis.waitUntilDone();
-	intake.move_voltage(9500);
+	intake.move_voltage(9500);	//Score on alliance stake
 	pros::delay(2000);
 	intake.move_voltage(0);
 

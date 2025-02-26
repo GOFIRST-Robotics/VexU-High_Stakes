@@ -156,19 +156,17 @@ void rushAuto() {
 
 void goalAutoBlue() {
     chassis.setPose(21,60,-170);
-    //ladyBrown.move_voltage(6000);
     chassis.moveToPoint(22,65,2000, {.forwards = false});   //Move to grab goal
     chassis.waitUntilDone();
-    clamp.set_value(true);
+    clamp.set_value(true);  //Grab goal
     pros::delay(2000);
-    intake.move_voltage(8000);
+    intake.move_voltage(8000);  //Score ring
     pros::delay(2000);
     intake.move_voltage(0);
-    ladyBrown.move_voltage(-10000);
-    //clamp.set_value(false);
+    ladyBrown.move_voltage(-10000); //Move lady brown back
     pros::delay(2000);
     remy.move_voltage(-3000);
-ladyBrown.move_voltage(-1000);
+    ladyBrown.move_voltage(-1000);
 
 
     chassis.moveToPoint(28,49, 2000, {.maxSpeed = 70}); //Reposition to align with bar
@@ -179,27 +177,24 @@ ladyBrown.move_voltage(-1000);
 
     chassis.moveToPoint(55,55, 2000, {.maxSpeed = 60}); //Move to touch bar
     chassis.waitUntilDone();
-    ladyBrown.move_voltage(10000);
+    ladyBrown.move_voltage(10000);  //Move lady brown to touch bar
     pros::delay(2000);
     ladyBrown.move_voltage(1000);
 }
 
 void goalAutoRed() {
     chassis.setPose(-21,60,170);
-    //ladyBrown.move_voltage(6000);
     chassis.moveToPoint(-26,75,2000, {.forwards = false, .maxSpeed = 60});  //Move to grab goal
     chassis.waitUntilDone();
-    clamp.set_value(true);
+    clamp.set_value(true);  //Grab goal
     pros::delay(2000);
-    intake.move_voltage(8000);
+    intake.move_voltage(8000);  //Score ring
     pros::delay(2000);
     intake.move_voltage(0);
-    ladyBrown.move_voltage(-10000);
-    //clamp.set_value(false);
+    ladyBrown.move_voltage(-10000); //Move lady brown back
     pros::delay(2000);
     remy.move_voltage(-3000);
-ladyBrown.move_voltage(-1000);
-
+    ladyBrown.move_voltage(-1000);
 
     chassis.moveToPoint(-28,49, 2000, {.maxSpeed = 70});    //Reposition to align with bar
     chassis.waitUntilDone();
@@ -209,7 +204,7 @@ ladyBrown.move_voltage(-1000);
 
     chassis.moveToPoint(-55,55, 2000, {.maxSpeed = 60});    //Move to touch bar
     chassis.waitUntilDone();
-    ladyBrown.move_voltage(10000);
+    ladyBrown.move_voltage(10000);  //Move lady brown to touch bar
     pros::delay(2000);
     ladyBrown.move_voltage(1000);
 }

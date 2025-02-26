@@ -129,68 +129,85 @@ void autonomous() {
 	chassis.setPose(9.5,72,90);
 	intake.move_voltage(9500);
 	pros::delay(1000);
-	chassis.moveToPoint(20,72,2000);	//Ring
+	chassis.moveToPoint(20,72,2000);	//Ring in front of robot
 	chassis.waitUntilDone();
-	pros::delay(100);
 	intake.move_voltage(0);
 
-	chassis.turnToHeading(-135,800);
+	chassis.turnToHeading(-135,800);	//Turn with back to goal
 
-	chassis.moveToPoint(53,121,2000,{.forwards = false, .maxSpeed = 50});
+	chassis.moveToPoint(53,121,2000,{.forwards = false, .maxSpeed = 50});	//Back into goal 1
 	chassis.waitUntilDone();
 	pros::delay(200);
-	clamp.set_value(true);
+	clamp.set_value(true);	//Pick up goal 1
 	pros::delay(700);
 	intake.move_voltage(9500);
 	pros::delay(1500);
 
-	chassis.moveToPoint(50, 100, 2000, {.maxSpeed = 60});	//Ring
+	chassis.moveToPoint(50, 100, 2000, {.maxSpeed = 60});	//Pick up first ring
 
 	chassis.turnToPoint(74,103,2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed = 60});
-	chassis.moveToPoint(74,115,2000, {.maxSpeed = 60});
+	chassis.moveToPoint(74,115,2000, {.maxSpeed = 60});	//Pick up second ring
 	chassis.turnToPoint(74,126,2000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .maxSpeed = 60});
 
-	chassis.moveToPoint(74,126,2000);
+	chassis.moveToPoint(74,126,2000);	//Pick up ring stack
+	chassis.moveToPoint(74,120,2000, {.forwards = false, .maxSpeed = 60});	//Back away from ring stack to avoid blue ring
+	pros::delay(250);
+	chassis.waitUntilDone();
+	intake.move_voltage(0);
 
 	chassis.moveToPoint(30,120,2000, {.maxSpeed = 70});	//final ring
+	pros::delay(50);
+	intake.move_voltage(9500);
 	chassis.turnToHeading(135,2000);
-	chassis.moveToPoint(15,132,1000, {.forwards = false, .maxSpeed = 60});	//Drop goal
+	chassis.moveToPoint(15,132,1000, {.forwards = false, .maxSpeed = 60});	//Drop goal in corner
 	clamp.set_value(false);
 	pros::delay(500);
 
-	chassis.moveToPoint(100,100,2000, {.maxSpeed = 60});
-	chassis.turnToHeading(-35,2000, {.maxSpeed = 60});
-	chassis.moveToPoint(100,85,2000, {.forwards = false, .maxSpeed = 60});
+	chassis.moveToPoint(100,100,2000, {.maxSpeed = 60});	//Move to goal 2
+	chassis.turnToHeading(-35,2000, {.maxSpeed = 60});	//Turn with back to goal
+	chassis.moveToPoint(100,85,2000, {.forwards = false, .maxSpeed = 60});	//Back into goal
 	chassis.waitUntilDone();
 
-	clamp.set_value(true);	//Goal grab
+	clamp.set_value(true);	//Goal 2 grab
 	pros::delay(700);
 
-	chassis.moveToPoint(90,130,2000, {.maxSpeed = 60});	//Ring stack
-
-	chassis.turnToPoint(110,120,2000, {.maxSpeed = 60});
-	chassis.moveToPoint(110,120,2000, {.maxSpeed = 60});	//Ring stack
+	chassis.moveToPoint(90,116,2000, {.maxSpeed = 60});	//Ring stack 1
+	chassis.moveToPoint(90,110,2000, {.forwards = false, .maxSpeed = 60});	//Back away to avoid blue ring
 
 
-	chassis.moveToPoint(135,135,2000, {.forwards = false, .maxSpeed = 60});	//Corner
+	chassis.turnToPoint(110,121,2000, {.maxSpeed = 60});
+	chassis.moveToPoint(110,121,2000, {.maxSpeed = 60});	//Ring stack 2
+
+	chassis.turnToHeading(-135,2000, {.maxSpeed = 60});	//Turn with back to corner
+	chassis.moveToPoint(130,135,2000, {.forwards = false, .maxSpeed = 60});	//Drop goal in corner
 	chassis.waitUntilDone();
 	clamp.set_value(false);
 	pros::delay(1000);
-	chassis.moveToPoint(121,95,2000, {.maxSpeed = 60});	//ring stack
+	intake.move_voltage(5000);
+	chassis.moveToPoint(121,97,2000, {.maxSpeed = 60});	//Ring stack in front of goal 3
 	chassis.waitUntilDone();
 	pros::delay(100);
 	intake.move_voltage(0);
 
 	chassis.turnToHeading(0,2000, {.maxSpeed = 60});	//Goal
-	chassis.moveToPoint(121,79,2000, {.forwards = false, .maxSpeed = 60});	//ring stack
+	chassis.moveToPoint(121,74,2000, {.forwards = false, .maxSpeed = 60});	//Back into and pick up goal 3
 	chassis.waitUntilDone();
 	pros::delay(400);
 	clamp.set_value(true);
+	pros::delay(700);
+	intake.move_voltage(9500);
 	pros::delay(1000);
-	chassis.moveToPoint(95,100,2000, {.maxSpeed = 60});	//Clear out center
+	intake.move_voltage(6000);
 
-	chassis.moveToPoint(76,73,2000, {.maxSpeed = 60});
+	chassis.moveToPoint(88,90,2000, {.maxSpeed = 60});	//Reposition to center
+	chassis.waitUntilDone();
+	intake.move_voltage(9500);
 
+	chassis.moveToPoint(76,73,2000, {.maxSpeed = 60});	//Drive into center
+	chassis.moveToPoint(68,76,2000, {.maxSpeed = 60});	//Reposition in center
+
+	chassis.swingToHeading(0, DriveSide::RIGHT, 500, {.maxSpeed = 60});	//Sweep to pick up rings
+	chassis.swingToHeading(170, DriveSide::RIGHT, 500, {.maxSpeed = 60});	//Sweep to pick up rings
 	}
 
 

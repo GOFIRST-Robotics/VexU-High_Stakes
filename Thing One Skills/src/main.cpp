@@ -137,37 +137,71 @@ void competition_initialize() {}
 
 
 void autonomous() {
-    chassis.setPose(13,48,-59.03624);
-    chassis.moveToPoint(48,27,2000, {.forwards = false, .maxSpeed = 60});   //Move to goal
+    chassis.setPose(13,46,-59.03624);
+    remy.move_voltage(-1000);
+
+    ladyBrown.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+    chassis.moveToPoint(48,25,2000, {.forwards = false, .maxSpeed = 40});   //Move to goal
     chassis.waitUntilDone();
     clamp.set_value(true);
-    pros::delay(400);
-    chassis.turnToPoint(72,24,2000, {.maxSpeed = 60});    //Turn to ring
+    pros::delay(700);
+    chassis.turnToPoint(72,24,2000, {.maxSpeed = 40});    //Turn to ring
     chassis.waitUntilDone();
-    intake.move_voltage(8000);
-    pros::delay(500);
-    chassis.moveToPoint(72,24,2000, {.maxSpeed = 60});    //Ring
-    chassis.waitUntilDone();
+    intake.move_voltage(9000);
     pros::delay(1000);
+    chassis.moveToPoint(78,24,2000, {.maxSpeed = 40});    //Ring
+    //chassis.moveToPoint(72,24,2000, {.forwards = false, .maxSpeed = 40});    //back up from ring
+        intake.move_voltage(7000);
 
-    chassis.turnToPoint(72, 14, 2000, {.maxSpeed = 60});
-    chassis.moveToPoint(72,14,2000, {.maxSpeed = 60});    //Ring stack
-    chassis.turnToPoint(50,45,2000, {.maxSpeed = 60});    
-    chassis.moveToPoint(72,24,2000, {.maxSpeed = 60});    //Ring
-    chassis.turnToPoint(26,25,2000, {.maxSpeed = 60});    
-    chassis.moveToPoint(26,25,2000, {.maxSpeed = 60});    //Ring
+    chassis.waitUntilDone();
+    pros::delay(2000);
 
-    chassis.turnToPoint(72,24,2000, {.maxSpeed = 60});
 
-    chassis.moveToPoint(11,8,2000, {.maxSpeed = 60}); //Drop goal in corner
+    //chassis.moveToPoint(94, 20, 2000, {.maxSpeed = 40});    //reposition for corner
 
+    chassis.turnToHeading(-70, 2000, {.maxSpeed = 40}); //turn to corner    
+        chassis.moveToPoint(80,19, 2000, {.forwards = false, .maxSpeed = 60}); //Reposition
+
+    chassis.moveToPoint(125,19, 2000, {.forwards = false, .maxSpeed = 60}); //Drop in corner
+    chassis.waitUntilDone();
+    intake.move_voltage(0);
     clamp.set_value(false);
+    pros::delay(700);
+    chassis.turnToHeading(0, 2000);
 
-    chassis.moveToPoint(94,45,2000, {.maxSpeed = 60});    //move to goal
-    chassis.moveToPoint(94,45,2000, {.maxSpeed = 60});    //move to goal
+    chassis.moveToPoint(120, 70, 2000, {.maxSpeed = 40});   //reposition
+
+    chassis.turnToHeading(83, 2000, {.maxSpeed = 40}); //turn to goal
+    chassis.moveToPoint(98, 55, 2000, {.forwards = false, .maxSpeed = 40});    //Move to goal
 
 
-    //chassis.turnToHeading();
+
+    chassis.waitUntilDone();
+    clamp.set_value(true);
+    pros::delay(700);
+    intake.move_voltage(7000);
+
+            chassis.moveToPoint(72, 26, 2000, {.forwards = false, .maxSpeed = 40});    //Reposititon
+
+    chassis.turnToPoint(46,48,2000, {.maxSpeed = 40});  //Turn to ring
+    chassis.moveToPoint(46, 48, 2000, {.maxSpeed = 40});    //Move to ring
+
+    chassis.turnToPoint(25,25,2000, {.maxSpeed = 40});
+
+
+    chassis.moveToPoint(25, 25, 2000, {.maxSpeed = 40});    //Last ring
+    ladyBrown.move_voltage(10000);
+    chassis.turnToHeading(0,2000);
+    chassis.moveToPoint(12,8,2000,{.forwards = false, .maxSpeed = 40});
+    chassis.waitUntilDone();
+    ladyBrown.move_voltage(0);
+    clamp.set_value(false);
+    pros::delay(2000);
+
+        chassis.moveToPoint(20,20,2000,{.forwards = false, .maxSpeed = 40});
+
+
 }
 
 
