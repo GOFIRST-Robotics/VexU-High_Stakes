@@ -23,7 +23,7 @@ pros::Motor ladyBrown(-10);
 pros::Rotation ladyJointSensor(12);
 const int LADY_BROWN_START_ANGLE = 100; // 100 is all the way back
 const int LADY_BROWN_MAX_ANGLE = 300;
-const int LADY_BROWN_MIN_ANGLE = 90;
+const int LADY_BROWN_MIN_ANGLE = 102;
 const int LADY_BROWN_SCORE_ANGLE = 270;
 const int LADY_BROWN_UP_ANGLE = 170;
 
@@ -190,6 +190,7 @@ void clamp_up() {
 
 
 // ----------------- Remy stuffs -----------------
+
 void remi_down() {
     remy.move_voltage(7000);
 }
@@ -202,14 +203,21 @@ void remi_stop() {
     remy.move_voltage(-1200);
 }
 
+void remi_go_to(int targ) {
+    //remy.
+}
+
 
 // ----------------- Lady Brown stuffs -----------------
-int lady_state = 0;
 #define LADY_START 0
 #define LADY_OUT 1
 #define LADY_IN 2
 #define LADY_UP 3
 #define LADY_JOY 4
+
+int lady_state = LADY_START;
+
+int lady_intake_timer = 0;
 
 #define LADY_JOY_DEADZONE 60
 
@@ -219,6 +227,7 @@ int get_lady_angle() {
 }
 
 void lady_PF_move(float targ) {
+
     if (targ > LADY_BROWN_MAX_ANGLE) {
         targ = LADY_BROWN_MAX_ANGLE;
     }
@@ -233,7 +242,7 @@ void lady_PF_move(float targ) {
     float kP = 0.01;
     pow += kP * (targ - pos);
 
-    controller.print(0, 0, "%f, %f", pos, targ - pos);
+    // controller.print(0, 0, "%f, %f", pos, targ - pos);
 
     float kF = 0.06;
     pow += kF * (sin((pos * (3.14159/180))));
@@ -246,7 +255,11 @@ void lady_out() {
 }
 
 void lady_in() {
-    ladyBrown.move_voltage(-8000);
+    lady_PF_move(LADY_BROWN_MIN_ANGLE);
+}
+
+bool is_lady_in() {
+    return get_lady_angle() < LADY_BROWN_MIN_ANGLE + 10;
 }
 
 void lady_move(int percent) {
@@ -271,28 +284,36 @@ void lady_stop() {
 void opcontrol() {
     while (true) {
 
+        controller.print(0, 0, "%d, %d", get_lady_angle(), lady_state);
+
         // ----------------- Drive stuffs -----------------
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
+        // Slow down 
         float mult = (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) ? 0.5 : 1.0;
         chassis.arcade(leftY * mult, rightX * mult);
 
 
         // ----------------- Intake stuffs -----------------
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-            in_take();
-        }
-        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+        
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) || (lady_state == LADY_OUT & lady_intake_timer > 20)) {
             out_take();
+        }
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2) || (lady_state == LADY_IN  & is_lady_in())) {
+            in_take();
         }
         else {
             stop_take();
         }
 
+        lady_intake_timer++;
+
 
         // ----------------- Clamp stuffs -----------------
         if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1) & clamp_count > 50) {
+
+            // Toggle between clampeded and not
             if (!clamped) {
                 clamp_down();
                 clamped = true;
@@ -302,7 +323,7 @@ void opcontrol() {
                 clamped = false;
             }
 
-            clamp_count = 0;
+            clamp_count = 0; // reset counter
         }
         else {
             clamp_count++;
@@ -316,7 +337,7 @@ void opcontrol() {
         else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
             remi_up();
         }
-        else { 
+        else {
             remi_stop();
         }
 
@@ -324,9 +345,11 @@ void opcontrol() {
         // ----------------- Lady Brown stuffs -----------------
         int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
+
+        // Lady Brown Finate State Machine
         switch(lady_state) {
             case LADY_START:
-                lady_state = LADY_IN;
+                lady_state = LADY_UP;
                 break;
 
             case LADY_UP:
@@ -359,17 +382,12 @@ void opcontrol() {
 
             case LADY_IN:
 
-                // Move if button is held
-                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-                    lady_in();
-                }
-                else {
-                    lady_stop();
-                }
+                lady_in();
 
                 // Check for moves to other states
                 if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
                     lady_state = LADY_OUT;
+                    lady_intake_timer = 0;
                 }
                 else if (abs(rightY) > LADY_JOY_DEADZONE) {
                     lady_state = LADY_JOY;
@@ -396,7 +414,6 @@ void opcontrol() {
                 }
                 break;
         }
-        
 
 
         // delay to save resources
