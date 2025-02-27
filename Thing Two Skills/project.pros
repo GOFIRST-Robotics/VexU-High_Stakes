@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "Thing Two",
+    "project_name": "15in Skills",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -298,8 +298,8 @@
       }
     },
     "upload_options": {
-      "description": "Match Code",
-      "slot": 2,
+      "description": "Skills",
+      "slot": 3,
       "icon": "pizza"
     },
     "use_early_access": false

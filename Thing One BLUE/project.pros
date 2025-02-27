@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "BLUE",
+    "project_name": "24in BLUE",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -298,7 +298,7 @@
       }
     },
     "upload_options": {
-      "description": "Match Code",
+      "description": "BLUE",
       "slot": 2
     },
     "use_early_access": false
