@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "lemlib/api.hpp"
+#include "cmath"
 //#include "../include/definitons.h"
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -22,7 +23,7 @@ pros::Motor ladyBrown(-10);
 pros::Rotation ladyJointSensor(12);
 const int LADY_BROWN_START_ANGLE = 100; // 100 is all the way back
 const int LADY_BROWN_MAX_ANGLE = 300;
-const int LADY_BROWN_MIN_ANGLE = 90;
+const int LADY_BROWN_MIN_ANGLE = 102;
 const int LADY_BROWN_SCORE_ANGLE = 270;
 const int LADY_BROWN_UP_ANGLE = 170;
 
@@ -142,8 +143,6 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-
-
 void autonomous() {
     chassis.setPose(13,46,-59.03624);
     remy.move_voltage(-1000);
@@ -235,8 +234,6 @@ void autonomous() {
 
 }
 
-
-
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -250,6 +247,7 @@ void autonomous() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+
 
 // ----------------- Intake stuffs -----------------
 void in_take() {
@@ -279,6 +277,7 @@ void clamp_up() {
 
 
 // ----------------- Remy stuffs -----------------
+
 void remi_down() {
     remy.move_voltage(7000);
 }
@@ -291,14 +290,21 @@ void remi_stop() {
     remy.move_voltage(-1200);
 }
 
+void remi_go_to(int targ) {
+    //remy.
+}
+
 
 // ----------------- Lady Brown stuffs -----------------
-int lady_state = 0;
 #define LADY_START 0
 #define LADY_OUT 1
 #define LADY_IN 2
 #define LADY_UP 3
 #define LADY_JOY 4
+
+int lady_state = LADY_START;
+
+int lady_intake_timer = 0;
 
 #define LADY_JOY_DEADZONE 60
 
@@ -336,7 +342,11 @@ void lady_out() {
 }
 
 void lady_in() {
-    ladyBrown.move_voltage(-8000);
+    lady_PF_move(LADY_BROWN_MIN_ANGLE);
+}
+
+bool is_lady_in() {
+    return get_lady_angle() < LADY_BROWN_MIN_ANGLE + 10;
 }
 
 void lady_move(int percent) {
@@ -361,6 +371,8 @@ void lady_stop() {
 void opcontrol() {
     while (true) {
 
+        controller.print(0, 0, "%d, %d", get_lady_angle(), lady_state);
+
         // ----------------- Drive stuffs -----------------
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
@@ -371,15 +383,18 @@ void opcontrol() {
 
 
         // ----------------- Intake stuffs -----------------
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-            in_take();
-        }
-        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+        
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) || (lady_state == LADY_OUT & lady_intake_timer > 20)) {
             out_take();
+        }
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2) || (lady_state == LADY_IN  & is_lady_in())) {
+            in_take();
         }
         else {
             stop_take();
         }
+
+        lady_intake_timer++;
 
 
         // ----------------- Clamp stuffs -----------------
@@ -421,7 +436,7 @@ void opcontrol() {
         // Lady Brown Finate State Machine
         switch(lady_state) {
             case LADY_START:
-                lady_state = LADY_IN;
+                lady_state = LADY_UP;
                 break;
 
             case LADY_UP:
@@ -454,17 +469,12 @@ void opcontrol() {
 
             case LADY_IN:
 
-                // Move if button is held
-                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-                    lady_in();
-                }
-                else {
-                    lady_stop();
-                }
+                lady_in();
 
                 // Check for moves to other states
                 if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
                     lady_state = LADY_OUT;
+                    lady_intake_timer = 0;
                 }
                 else if (abs(rightY) > LADY_JOY_DEADZONE) {
                     lady_state = LADY_JOY;
