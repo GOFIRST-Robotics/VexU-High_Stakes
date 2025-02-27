@@ -162,6 +162,9 @@ void autonomous() {
 	chassis.moveToPoint(15, 74, 2000, {.maxSpeed = 50});	//Ring stack 3
 	pros::delay(800);
 	clamp.set_value(false);
+    intake.move_voltage(-12000);
+    pros::delay(50);
+    intake.move_voltage(9500);
 
 	chassis.waitUntilDone();
 	pros::delay(200);

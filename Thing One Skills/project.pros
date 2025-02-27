@@ -299,7 +299,7 @@
     },
     "upload_options": {
       "description": "Skills",
-      "slot": 2,
+      "slot": 3,
       "icon": "pizza"
     },
     "use_early_access": false
