@@ -82,11 +82,11 @@ void readColor() {
 
   tcs.setInterrupt(false);  // turn on LED
 
-  delay(60);  // takes 50ms to read
+  delay(50);  // takes 50ms to read
 
   tcs.getRGB(&r, &g, &b);
 
-  tcs.setInterrupt(true);  // turn off LED
+  //tcs.setInterrupt(true);  // turn off LED
 }
 
 bool colorSeesRed() {
