@@ -1,5 +1,5 @@
 
-//This is code for the 15" Robot, for the 24" go to Thing One
+//This is code for the 24" Robot, for the 15" go to Thing One
 
 #include "main.h"
 #include "lemlib/api.hpp"
@@ -97,7 +97,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  */
 void initialize() {
     chassis.calibrate(); // calibrate sensors
-
+    colorSensor.
 }
 
 /**
