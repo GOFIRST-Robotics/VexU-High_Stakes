@@ -13,15 +13,8 @@ pros::MotorGroup left_motor_group({-16, -14, 15}, pros::MotorGears::blue);
 // right motor group
 pros::MotorGroup right_motor_group({18, -19, 20}, pros::MotorGears::blue);
 
-pros::MotorGroup intake({6,7}, pros::MotorGears::blue);
-
-pros::Motor ladyBrown(-10);
-pros::Motor remy(9);
-
-//rotation 1
-
-pros::ADIDigitalOut clamp('A');
-
+pros::MotorGroup intake_first_stage_motor_group({1}, pros::MotorGears::blue);
+pros::MotorGroup intake_second_stage_motor_group({2}, pros::MotorGears::blue);
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
@@ -97,7 +90,8 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  */
 void initialize() {
     chassis.calibrate(); // calibrate sensors
-    colorSensor.
+    ColorSensor intake_color_sensor = new ColorSensor(1, 2, true);
+    Intake intake = new Intake(intake_first_stage_motor_group, intake_second_stage_motor_group, intake_color_sensor);
 }
 
 /**
@@ -147,49 +141,6 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-void setIntake() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
-		intake.move_voltage(-12000);
-	}
-	else {
-		intake.move_voltage(10000);
-	}
-}
-
-void setClamp() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-		clamp.set_value(false);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)){
-		clamp.set_value(true);
-	}
-}
-
-void setRemy() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-		remy.move_voltage(7000);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
-		remy.move_voltage(-7000);
-	}
-    else {
-        remy.move_voltage(-1200);
-    }
-}
-
-void setlb() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
-		ladyBrown.move_voltage(12000);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-		ladyBrown.move_voltage(-10000);
-	}
-    else {
-        ladyBrown.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-        ladyBrown.move_velocity(0);
-
-    }
-}
 
 void opcontrol() {
     while (true) {
@@ -198,10 +149,7 @@ void opcontrol() {
         int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
         chassis.tank(leftY, rightY);
 
-		setIntake();
-		setClamp();
-        setRemy();
-        setlb();
+        intake.filtered_intake();
 
         // delay to save resources
         pros::delay(10);

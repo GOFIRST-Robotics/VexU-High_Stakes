@@ -1,13 +1,13 @@
 #include "intake.h"
 
-void intake::initialize_intake(pros::MotorGroup lower_intake_stage, pros::MotorGroup upper_intake_stage, colorSensor colorSensor) {
+void Intake::initialize_intake(pros::MotorGroup lower_intake_stage, pros::MotorGroup upper_intake_stage, colorSensor colorSensor) {
     lower_stage = &lower_intage_stage;
     upper_stage = &upper_intake_stage;
 
     color_sensor = &colorSensor;
 }
 
-void intake::initialize_intake(pros::MotorGroup lower_intake_stage, pros::MotorGroup upper_intake_stage) {
+void Intake::initialize_intake(pros::MotorGroup lower_intake_stage, pros::MotorGroup upper_intake_stage) {
     lower_stage = &lower_intage_stage;
     upper_stage = &upper_intake_stage;
 }
@@ -16,7 +16,7 @@ void intake::initialize_intake(pros::MotorGroup lower_intake_stage, pros::MotorG
 * Intakes with first stage like normal, but upper stage will try to spit out rings of the wrong color based on the color sensor.
 * Call it just like you would the normal intake function to use.
 */
-void intake::filtered_intake() {
+void Intake::filtered_intake() {
 
     // Run first stage like normal
     move_lower(intake_vel[0]);
@@ -45,18 +45,18 @@ void intake::filtered_intake() {
     
 }
 
-void intake::intake() {
+void Intake::intake() {
     upper_stage.move(intake_vel[0]);
     lower_stage.move(intake_vel[1]);
 }
-void intake::outtake() {
+void Intake::outtake() {
     upper_stage.move(outtake_vel[0]);
     lower_stage.move(outtake_vel[1]);
 }
 
-void intake::move_upper(int voltage) {
+void Intake::move_upper(int voltage) {
     lower_stage.move(voltage);
 }
-void intake::move_lower(int voltage) {
+void Intake::move_lower(int voltage) {
     lower_stage.move(voltage);
 }

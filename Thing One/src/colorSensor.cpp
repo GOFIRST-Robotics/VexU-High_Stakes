@@ -4,6 +4,7 @@ void colorSensor::setup_color(int red_port, int blue_port, bool opps) {
     pros::ADIDigitalIn red_sense (red_port);
     pros::ADIDigitalIn blue_sense (blue_port);
 
+    // true = red, false = blue
     OPP_COLOR = opps;
 }
 
