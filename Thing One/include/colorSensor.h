@@ -1,14 +1,19 @@
 #pragma once
+#include "definitions.h"
+#define RED true
+#define BLUE false
 
 class ColorSensor {
 
-    const bool RED = true;
-    const bool BLUE = false;
     bool OPP_COLOR = false; // false = blue, true = red
+
+    pros::adi::DigitalIn *red_sense;
+    pros::adi::DigitalIn *blue_sense;
+    
 
 public:
 
-    void setup_color(int red_port, int blue_port, bool opps);
+    ColorSensor(char red_port, char blue_port, bool opps);
 
     bool sees_opps();
 
@@ -20,4 +25,4 @@ public:
 
     bool get_opps();
 
-}
+};

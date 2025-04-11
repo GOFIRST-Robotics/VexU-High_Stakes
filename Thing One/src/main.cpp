@@ -3,6 +3,8 @@
 
 #include "main.h"
 #include "lemlib/api.hpp"
+#include "colorSensor.h"
+#include "intake.h"
 //#include "../include/definitons.h"
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -15,6 +17,9 @@ pros::MotorGroup right_motor_group({18, -19, 20}, pros::MotorGears::blue);
 
 pros::MotorGroup intake_first_stage_motor_group({1}, pros::MotorGears::blue);
 pros::MotorGroup intake_second_stage_motor_group({2}, pros::MotorGears::blue);
+
+ColorSensor *intake_color_sensor;
+Intake *intake;
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
@@ -90,8 +95,8 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  */
 void initialize() {
     chassis.calibrate(); // calibrate sensors
-    ColorSensor intake_color_sensor = new ColorSensor(1, 2, true);
-    Intake intake = new Intake(intake_first_stage_motor_group, intake_second_stage_motor_group, intake_color_sensor);
+    intake_color_sensor = new ColorSensor('A', 'B', true);
+    intake = new Intake(&intake_first_stage_motor_group, &intake_second_stage_motor_group, intake_color_sensor);
 }
 
 /**
@@ -149,7 +154,7 @@ void opcontrol() {
         int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
         chassis.tank(leftY, rightY);
 
-        intake.filtered_intake();
+        intake->filtered_intake();
 
         // delay to save resources
         pros::delay(10);

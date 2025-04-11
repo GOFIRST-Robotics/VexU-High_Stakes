@@ -1,15 +1,29 @@
 #include "intake.h"
 
-void Intake::initialize_intake(pros::MotorGroup lower_intake_stage, pros::MotorGroup upper_intake_stage, colorSensor colorSensor) {
-    lower_stage = &lower_intage_stage;
-    upper_stage = &upper_intake_stage;
+Intake::Intake(pros::v5::MotorGroup *lower_intake_stage, pros::v5::MotorGroup *upper_intake_stage, ColorSensor *colorSensor) {
+    lower_stage = lower_intake_stage;
+    upper_stage = upper_intake_stage;
 
-    color_sensor = &colorSensor;
+    color_sensor = colorSensor;
+
+    intake_vel[0] = 4000;
+    intake_vel[1] = 4000;
+    outtake_vel[0] = -4000;
+    outtake_vel[1] = -4000;
+    
+    spitting_vel = -3000;
 }
 
-void Intake::initialize_intake(pros::MotorGroup lower_intake_stage, pros::MotorGroup upper_intake_stage) {
-    lower_stage = &lower_intage_stage;
-    upper_stage = &upper_intake_stage;
+Intake::Intake(pros::v5::MotorGroup *lower_intake_stage, pros::v5::MotorGroup *upper_intake_stage) {
+    lower_stage = lower_intake_stage;
+    upper_stage = upper_intake_stage;
+
+    intake_vel[0] = 4000;
+    intake_vel[1] = 4000;
+    outtake_vel[0] = -4000;
+    outtake_vel[1] = -4000;
+    
+    spitting_vel = -3000;
 }
 
 /*
@@ -26,12 +40,12 @@ void Intake::filtered_intake() {
             move_upper(intake_vel[0]);
 
             // Change state if the wrong color is detected
-            if (colorSensor.sees_opps()) {
+            if (color_sensor->sees_opps()) {
                 intake_state = INTAKE_SPITTING;
             }
             break;
         case INTAKE_SPITTING:
-            move_upper(SPITTING_VEL);
+            move_upper(spitting_vel);
 
             intake_state_machine_timer++;
 
@@ -46,17 +60,17 @@ void Intake::filtered_intake() {
 }
 
 void Intake::intake() {
-    upper_stage.move(intake_vel[0]);
-    lower_stage.move(intake_vel[1]);
+    upper_stage->move(intake_vel[0]);
+    lower_stage->move(intake_vel[1]);
 }
 void Intake::outtake() {
-    upper_stage.move(outtake_vel[0]);
-    lower_stage.move(outtake_vel[1]);
+    upper_stage->move(outtake_vel[0]);
+    lower_stage->move(outtake_vel[1]);
 }
 
 void Intake::move_upper(int voltage) {
-    lower_stage.move(voltage);
+    lower_stage->move(voltage);
 }
 void Intake::move_lower(int voltage) {
-    lower_stage.move(voltage);
+    lower_stage->move(voltage);
 }

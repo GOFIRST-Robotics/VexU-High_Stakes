@@ -1,5 +1,11 @@
 #pragma once
-#include 
+#include "definitions.h"
+#include "colorSensor.h"
+
+#define INTAKE_CLEAR 0
+#define INTAKE_SPITTING 1
+
+#define SPIT_TIME 20
 
 class Intake {
 
@@ -7,23 +13,20 @@ class Intake {
     int intake_vel[2];
     int outtake_vel[2];
 
+    int spitting_vel;
+
     pros::MotorGroup *upper_stage;
     pros::MotorGroup *lower_stage;
 
-    colorSensor *color_sensor;
-
-    #define INTAKE_CLEAR 0
-    #define INTAKE_SPITTING 1
+    ColorSensor *color_sensor;
 
     int intake_state = INTAKE_CLEAR;
-    int intake_state_machine_counter = 0;
-
-    #define SPIT_TIMER 20
+    int intake_state_machine_timer = 0;
 
 public:
 
-    void initialize_intake(pros::MotorGroup lower_stage, pros::MotorGroup upper_stage, colorSensor color_sensor);
-    void initialize_intake(pros::MotorGroup lower_stage, pros::MotorGroup upper_stage);
+    Intake(pros::v5::MotorGroup *lower_stage, pros::v5::MotorGroup *upper_stage, ColorSensor *color_sensor);
+    Intake(pros::v5::MotorGroup *lower_stage, pros::v5::MotorGroup *upper_stage);
 
     void filtered_intake();
 
@@ -34,4 +37,4 @@ public:
     void move_lower(int voltage);
 
 
-}
+};
