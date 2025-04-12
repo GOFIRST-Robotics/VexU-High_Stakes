@@ -1,14 +1,14 @@
 #pragma once
 #include "definitions.h"
-#define RED true
-#define BLUE false
+#define TC_RED true // "Team Color" red
+#define TC_BLUE false // "Team Color" blue
 
 class ColorSensor {
 
     bool OPP_COLOR = false; // false = blue, true = red
 
-    pros::adi::DigitalIn *red_sense;
-    pros::adi::DigitalIn *blue_sense;
+    pros::adi::AnalogIn *red_sense;
+    pros::adi::AnalogIn *blue_sense;
     
 
 public:

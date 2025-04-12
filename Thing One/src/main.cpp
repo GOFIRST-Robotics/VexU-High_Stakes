@@ -95,7 +95,9 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  */
 void initialize() {
     chassis.calibrate(); // calibrate sensors
-    intake_color_sensor = new ColorSensor('A', 'B', true);
+    intake_color_sensor = new ColorSensor('C', 'A', TC_BLUE);
+
+    pros::screen::set_pen(pros::c::COLOR_BLUE);
     intake = new Intake(&intake_first_stage_motor_group, &intake_second_stage_motor_group, intake_color_sensor);
 }
 
@@ -150,9 +152,9 @@ void autonomous() {
 void opcontrol() {
     while (true) {
         // get left y and right y positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
-        chassis.tank(leftY, rightY);
+        // int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        // int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+        // chassis.tank(leftY, rightY);
 
         intake->filtered_intake();
 

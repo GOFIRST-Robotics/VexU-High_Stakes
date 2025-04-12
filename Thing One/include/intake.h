@@ -36,5 +36,4 @@ public:
     void move_upper(int voltage);
     void move_lower(int voltage);
 
-
 };

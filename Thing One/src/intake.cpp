@@ -6,24 +6,24 @@ Intake::Intake(pros::v5::MotorGroup *lower_intake_stage, pros::v5::MotorGroup *u
 
     color_sensor = colorSensor;
 
-    intake_vel[0] = 4000;
-    intake_vel[1] = 4000;
-    outtake_vel[0] = -4000;
-    outtake_vel[1] = -4000;
+    intake_vel[0] = 40;
+    intake_vel[1] = 40;
+    outtake_vel[0] = -40;
+    outtake_vel[1] = -40;
     
-    spitting_vel = -3000;
+    spitting_vel = -300;
 }
 
 Intake::Intake(pros::v5::MotorGroup *lower_intake_stage, pros::v5::MotorGroup *upper_intake_stage) {
     lower_stage = lower_intake_stage;
     upper_stage = upper_intake_stage;
 
-    intake_vel[0] = 4000;
-    intake_vel[1] = 4000;
-    outtake_vel[0] = -4000;
-    outtake_vel[1] = -4000;
+    intake_vel[0] = 40;
+    intake_vel[1] = 40;
+    outtake_vel[0] = -40;
+    outtake_vel[1] = -40;
     
-    spitting_vel = -3000;
+    spitting_vel = -300;
 }
 
 /*
@@ -35,9 +35,14 @@ void Intake::filtered_intake() {
     // Run first stage like normal
     move_lower(intake_vel[0]);
     
+    move_upper((color_sensor->sees_opps()) ? intake_vel[1] : spitting_vel);
+
+    // This version of the code below spits for a set time rather than spitting
+    // until it no longer sees the opps. 
+    /*
     switch (intake_state) {
         case INTAKE_CLEAR:
-            move_upper(intake_vel[0]);
+            move_upper(intake_vel[1]);
 
             // Change state if the wrong color is detected
             if (color_sensor->sees_opps()) {
@@ -56,7 +61,7 @@ void Intake::filtered_intake() {
             }
             break;
     }
-    
+    */
 }
 
 void Intake::intake() {
@@ -69,7 +74,7 @@ void Intake::outtake() {
 }
 
 void Intake::move_upper(int voltage) {
-    lower_stage->move(voltage);
+    upper_stage->move(voltage);
 }
 void Intake::move_lower(int voltage) {
     lower_stage->move(voltage);
