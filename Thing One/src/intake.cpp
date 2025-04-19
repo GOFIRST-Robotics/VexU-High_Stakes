@@ -6,24 +6,22 @@ Intake::Intake(pros::v5::MotorGroup *lower_intake_stage, pros::v5::MotorGroup *u
 
     color_sensor = colorSensor;
 
-    intake_vel[0] = 40;
-    intake_vel[1] = 40;
-    outtake_vel[0] = -40;
-    outtake_vel[1] = -40;
+    intake_vel[0] = 100;
+    intake_vel[1] = 30;
+    outtake_vel[0] = -100;
+    outtake_vel[1] = -30;
     
-    spitting_vel = -300;
+    spitting_vel = -100;
 }
 
 Intake::Intake(pros::v5::MotorGroup *lower_intake_stage, pros::v5::MotorGroup *upper_intake_stage) {
     lower_stage = lower_intake_stage;
     upper_stage = upper_intake_stage;
 
-    intake_vel[0] = 40;
-    intake_vel[1] = 40;
-    outtake_vel[0] = -40;
-    outtake_vel[1] = -40;
-    
-    spitting_vel = -300;
+    intake_vel[0] = 100;
+    intake_vel[1] = 30;
+    outtake_vel[0] = -100;
+    outtake_vel[1] = -30;
 }
 
 /*

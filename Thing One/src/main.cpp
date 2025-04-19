@@ -16,7 +16,7 @@ pros::MotorGroup left_motor_group({-16, -14, 15}, pros::MotorGears::blue);
 pros::MotorGroup right_motor_group({18, -19, 20}, pros::MotorGears::blue);
 
 pros::MotorGroup intake_first_stage_motor_group({1}, pros::MotorGears::blue);
-pros::MotorGroup intake_second_stage_motor_group({2}, pros::MotorGears::blue);
+pros::MotorGroup intake_second_stage_motor_group({-2}, pros::MotorGears::blue);
 
 ColorSensor *intake_color_sensor;
 Intake *intake;
