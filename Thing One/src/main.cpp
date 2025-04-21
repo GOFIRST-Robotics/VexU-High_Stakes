@@ -1,8 +1,10 @@
 
-//This is code for the 15" Robot, for the 24" go to Thing One
+//This is code for the 24" Robot, for the 15" go to Thing One
 
 #include "main.h"
 #include "lemlib/api.hpp"
+#include "colorSensor.h"
+#include "intake.h"
 //#include "../include/definitons.h"
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -13,15 +15,11 @@ pros::MotorGroup left_motor_group({-16, -14, 15}, pros::MotorGears::blue);
 // right motor group
 pros::MotorGroup right_motor_group({18, -19, 20}, pros::MotorGears::blue);
 
-pros::MotorGroup intake({6,7}, pros::MotorGears::blue);
+pros::MotorGroup intake_first_stage_motor_group({1}, pros::MotorGears::blue);
+pros::MotorGroup intake_second_stage_motor_group({-2}, pros::MotorGears::blue);
 
-pros::Motor ladyBrown(-10);
-pros::Motor remy(9);
-
-//rotation 1
-
-pros::ADIDigitalOut clamp('A');
-
+ColorSensor *intake_color_sensor;
+Intake *intake;
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
@@ -97,7 +95,10 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  */
 void initialize() {
     chassis.calibrate(); // calibrate sensors
+    intake_color_sensor = new ColorSensor('C', 'A', TC_BLUE);
 
+    pros::screen::set_pen(pros::c::COLOR_BLUE);
+    intake = new Intake(&intake_first_stage_motor_group, &intake_second_stage_motor_group, intake_color_sensor);
 }
 
 /**
@@ -147,61 +148,15 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-void setIntake() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
-		intake.move_voltage(-12000);
-	}
-	else {
-		intake.move_voltage(10000);
-	}
-}
-
-void setClamp() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-		clamp.set_value(false);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)){
-		clamp.set_value(true);
-	}
-}
-
-void setRemy() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-		remy.move_voltage(7000);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)){
-		remy.move_voltage(-7000);
-	}
-    else {
-        remy.move_voltage(-1200);
-    }
-}
-
-void setlb() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
-		ladyBrown.move_voltage(12000);
-	}
-	else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)){
-		ladyBrown.move_voltage(-10000);
-	}
-    else {
-        ladyBrown.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-        ladyBrown.move_velocity(0);
-
-    }
-}
 
 void opcontrol() {
     while (true) {
         // get left y and right y positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
-        chassis.tank(leftY, rightY);
+        // int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        // int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+        // chassis.tank(leftY, rightY);
 
-		setIntake();
-		setClamp();
-        setRemy();
-        setlb();
+        intake->filtered_intake();
 
         // delay to save resources
         pros::delay(10);
