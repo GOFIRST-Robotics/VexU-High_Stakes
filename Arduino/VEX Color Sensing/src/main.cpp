@@ -59,10 +59,17 @@ void initializeColorSensor(int redPort, int bluePort) {
   pinMode(bluePort, OUTPUT);
   
   if (tcs.begin()) {
-    //Serial.println("Found sensor");
+    Serial.println("Found sensor");
   } else {
     Serial.println("No TCS34725 found ... check your connections");
-    while (1); // halt!
+
+    pinMode(13, OUTPUT);
+    while (1) {
+      digitalWrite(13, HIGH);
+      delay(60);
+      digitalWrite(13, LOW);
+      delay(60);
+    }
   }
 
   Serial.print("R:\t"); Serial.print(int(r)); 
