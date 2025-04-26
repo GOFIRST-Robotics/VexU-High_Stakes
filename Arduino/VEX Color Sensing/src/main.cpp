@@ -2,7 +2,7 @@
 #include "Adafruit_TCS34725.h"
 
 
-int redPort = 10;
+int redPort = 2;
 int bluePort = 9;
 
 int colorDiff = 0;
