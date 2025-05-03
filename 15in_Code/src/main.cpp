@@ -1,7 +1,9 @@
 #include "main.h"
 #include "lemlib/api.hpp"
-#include "robodash/api.h"
+//#include "robodash/api.h"
 
+
+/*
 rd::Selector selector({
     {"SKILLS", skills},
     {"BLUE SIDE GOAL", blueSideGoal},
@@ -9,19 +11,21 @@ rd::Selector selector({
     {"RED SIDE GOAL", redSideGoal},
     {"RED MID GOAL", redMidGoal},
 });
-rd::Console console;
+
+*/
+//rd::Console console;
 
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-pros::adi::Encoder horizontal_encoder('A', 'B');
-pros::adi::Encoder vertical_encoder('C', 'D');
+pros::adi::Encoder horizontal_encoder('C', 'D');
+pros::adi::Encoder vertical_encoder('E', 'F');
 
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, .11, 0);
-lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, .11, 0);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, .177, 0);
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, .177, 0);
 
-pros::adi::Pneumatics clamp('e', false);
-pros::adi::Pneumatics rushMech('f', false);
+pros::adi::Pneumatics clamp('G', false);
+pros::adi::Pneumatics rushMech('H', false);
 
 // left motor group
 pros::MotorGroup left_motor_group({1, -20, -16}, pros::MotorGears::blue);
@@ -41,7 +45,7 @@ lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
 );
 
 // imu
-pros::Imu imu(13);
+pros::Imu imu(11);
 
 
 // odometry settings
@@ -90,7 +94,11 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {}
+void initialize() {
+     pros::lcd::initialize();    //Kept in case of debugging
+     chassis.calibrate();
+
+}
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -122,7 +130,7 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-    selector.run_auton();
+    //selector.run_auton();
 }
 
 /**
@@ -139,8 +147,82 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-void opcontrol() {
-    console.println("Hello");
-    selector.run_auton();
+void setIntake() {
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+        intake.move_voltage(-12000);
+    }
+    else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)){
+        intake.move_voltage(9500);
+    }
+    else {
+        intake.move_voltage(0);
+    }
+}
 
+bool clampToggle = false;
+bool clampLock = false;
+void setClamp1() {
+    if (clampToggle) {
+        clamp.set_value(true);
+    } else {
+        clamp.set_value(false);
+    }
+    
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+        if (!clampLock) {
+            clampToggle = !clampToggle;
+            clampLock = true;
+        } 
+    } else { clampLock = false; }
+}
+
+bool rushToggle = false;
+bool rushLock = false;
+void setRushMech1() {
+    if (rushToggle) {
+        rushMech.set_value(true);
+    } else {
+        rushMech.set_value(false);
+    }
+    
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+        if (!rushLock) {
+            rushToggle = !rushToggle;
+            rushLock = true;
+        } 
+    } else { rushLock = false; }
+}
+
+void opcontrol() {
+
+    
+    while (true) { // infinite loop
+        // print measurements from the rotation sensor
+        //pros::lcd::print(1, "Vertical Sensor: %i", .get_position());
+        //pros::lcd::print(2, "Horizontal Sensor: %i", hPod.get_position());
+        lemlib::Pose pose = chassis.getPose();
+// print the x, y, and theta values of the pose
+
+        pros::lcd::print(1, "X: %f", pose.x);
+        pros::lcd::print(2, "Y: %f", pose.y);
+        pros::lcd::print(3, "Theta: %f", pose.theta);
+        pros::delay(10); // delay to save resources. DO NOT REMOVE
+    }
+
+    while (true) {
+        // get left y and right y positions
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+        //chassis.tank(leftY, rightY);
+        chassis.tank(leftY, rightY);
+
+        setIntake();
+        setClamp1();
+        setRushMech1();
+
+        // delay to save resources
+        pros::delay(10);
+    }
 }
