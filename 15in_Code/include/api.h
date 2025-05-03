@@ -45,6 +45,8 @@
 #define PROS_VERSION_STRING "4.1.1"
 
 
+#include "pros/serial.h"
+
 #include "pros/adi.h"
 #include "pros/colors.h"
 #include "pros/device.h"
@@ -80,6 +82,8 @@
 #include "pros/rtos.hpp"
 #include "pros/screen.hpp"
 #include "pros/vision.hpp"
+
+#include "pros/serial.hpp"
 #endif
 
 #endif  // _PROS_API_H_

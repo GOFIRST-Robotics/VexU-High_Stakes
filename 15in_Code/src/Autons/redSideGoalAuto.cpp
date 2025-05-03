@@ -1,6 +1,7 @@
 #include "main.h"
 
 
-void redSideGoal() {
 
+void redSideGoal() {
+    chassis.moveToPoint(0,0,2000);
 }

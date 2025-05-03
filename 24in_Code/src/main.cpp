@@ -1,30 +1,22 @@
 #include "main.h"
 #include "lemlib/api.hpp"
-#include "robodash/api.h"
+//#include "robodash/api.h"
 
-rd::Selector selector({
-    {"SKILLS", skills},
-    {"BLUE RUSH GOAL", blueRush},
-    {"RED RUSH GOAL", redRush},
-});
+
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
-
-pros::adi::Encoder horizontal_encoder('A', 'B');
-pros::adi::Encoder vertical_encoder('C', 'D');
-
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, .11, 0);
-lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, .11, 0);
 
 pros::adi::Pneumatics clamp('e', false);
 pros::adi::Pneumatics rushMech('f', false);
 
 // left motor group
-pros::MotorGroup left_motor_group({1, -20, -16}, pros::MotorGears::blue);
+pros::MotorGroup left_motor_group({1, 21, -13}, pros::MotorGears::blue);
 // right motor group
-pros::MotorGroup right_motor_group({-8, 11, 12}, pros::MotorGears::blue);
+pros::MotorGroup right_motor_group({-8, 14, -17}, pros::MotorGears::blue);
 
-pros::MotorGroup intake({-9,10}, pros::MotorGears::blue);
+pros::MotorGroup intake({3,2}, pros::MotorGears::blue);
+
+//6 lb
 
 
 // drivetrain settings
@@ -37,13 +29,14 @@ lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
 );
 
 // imu
-pros::Imu imu(13);
+pros::Imu imu(4);
 
+//rotation 10
 
 // odometry settings
-lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
+lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-                            &horizontal_tracking_wheel, // horizontal tracking wheel 1
+                            nullptr, // horizontal tracking wheel 1
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
                             &imu // inertial sensor
 );
@@ -86,7 +79,9 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {}
+void initialize() {
+    chassis.calibrate();
+}
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -118,7 +113,64 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-    selector.run_auton();
+    chassis.setPose(26,34,90);
+
+    rushMech.set_value(true);
+    clamp.set_value(false);
+
+    chassis.moveToPoint(60,32, 2000);  //Rush
+
+    rushMech.set_value(false);
+    chassis.moveToPoint(40, 32, 35000, {.forwards = false});    //Pull back
+
+    chassis.waitUntilDone();
+
+    rushMech.set_value(true);
+    pros::delay(500);
+    clamp.set_value(false);
+
+    chassis.turnToHeading(-80, 2000); 
+
+    chassis.moveToPoint(55, 30, 2000, {.forwards = false, .maxSpeed = 60}); //Move to goal
+    rushMech.set_value(false);
+
+    chassis.waitUntilDone();
+    clamp.set_value(true);  //Grab goal
+    intake.move_voltage(8000);       //Scoring preload
+    pros::delay(2000);
+    intake.move_voltage(0);
+    clamp.set_value(false); //Drop goal
+
+    chassis.moveToPoint(25, 50, 2000);  //Go to line up position
+    chassis.turnToHeading(180,2000);
+
+    chassis.moveToPoint(25,60,2000,{.forwards = false, .maxSpeed = 70});    //Go to free goal
+    chassis.waitUntilDone();
+
+    clamp.set_value(true);  //Pick up goal
+    pros::delay(700);
+
+    intake.move_voltage(8000);
+
+    chassis.moveToPoint(25, 25, 2000);  //Ring stack
+
+    /*
+    if we get color sort on 24in
+
+    chassis.turnToPoint(90, 2000);
+    chassis.moveToPoint(58,25,2000)
+
+    */
+
+    chassis.turnToHeading(45,2000);
+
+    chassis.moveToPoint(52,55,2000);    //Go to touch bar
+    intake.move_voltage(0);
+
+    chassis.waitUntilDone();
+
+    //lb movement
+
 }
 
 /**
@@ -135,8 +187,6 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
- rd::Console console;
 void opcontrol() {
-    console.println("Hello");
 
 }
