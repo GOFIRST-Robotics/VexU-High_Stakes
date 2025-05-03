@@ -1,5 +1,7 @@
 #include "main.h"
 #include "lemlib/api.hpp"
+#include "colorSensor.h"
+#include "intake.h"
 //#include "robodash/api.h"
 
 
@@ -27,13 +29,26 @@ lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, .177, 0);
 pros::adi::Pneumatics clamp('G', false);
 pros::adi::Pneumatics rushMech('H', false);
 
-// left motor group
-pros::MotorGroup left_motor_group({1, -20, -16}, pros::MotorGears::blue);
-// right motor group
-pros::MotorGroup right_motor_group({-8, 11, 12}, pros::MotorGears::blue);
+// left drive motor group
+pros::MotorGroup left_motor_group({18, -7, -5}, pros::MotorGears::blue);
+// right drive motor group
+pros::MotorGroup right_motor_group({-2, 12, 3}, pros::MotorGears::blue);
 
-pros::MotorGroup intake({-9,10}, pros::MotorGears::blue);
+pros::MotorGroup intake_first_stage_motor_group({4}, pros::MotorGears::blue);
+pros::MotorGroup intake_second_stage_motor_group({8}, pros::MotorGears::blue);
 
+//LadyBrown
+pros::Motor ladyBrown(1);
+pros::Rotation ladyJointSensor(10);
+const int LADY_BROWN_MAX_ANGLE = 355;
+const int LADY_BROWN_MIN_ANGLE = 192;
+const int LADY_BROWN_COLLECT_ANGLE = 220;
+const int LADY_BROWN_START_ANGLE = LADY_BROWN_MIN_ANGLE; // 100 is all the way back
+const int LADY_BROWN_SCORE_ANGLE = 320;
+const int LADY_BROWN_UP_ANGLE = 295;
+
+ColorSensor *intake_color_sensor;
+Intake *intake;
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
@@ -95,9 +110,16 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-     pros::lcd::initialize();    //Kept in case of debugging
-     chassis.calibrate();
+    pros::lcd::initialize();    //Kept in case of debugging
+    pros::screen::set_pen(pros::c::COLOR_BLUE);
 
+    chassis.calibrate();
+
+    ladyJointSensor.reset_position();
+    ladyJointSensor.set_reversed(true);
+
+    intake_color_sensor = new ColorSensor('B', 'A', TC_BLUE);
+    intake = new Intake(&intake_first_stage_motor_group, &intake_second_stage_motor_group, intake_color_sensor);
 }
 
 /**
@@ -147,80 +169,256 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-void setIntake() {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-        intake.move_voltage(-12000);
-    }
-    else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)){
-        intake.move_voltage(9500);
-    }
-    else {
-        intake.move_voltage(0);
-    }
+
+// ----------------- Clamp stuffs -----------------
+int clamp_count = 0;
+bool clamped = false;
+
+void clamp_down() {
+    clamp.set_value(true);
 }
 
-bool clampToggle = false;
-bool clampLock = false;
-void setClamp1() {
-    if (clampToggle) {
-        clamp.set_value(true);
-    } else {
-        clamp.set_value(false);
-    }
-    
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-        if (!clampLock) {
-            clampToggle = !clampToggle;
-            clampLock = true;
-        } 
-    } else { clampLock = false; }
+void clamp_up() {
+    clamp.set_value(false);
 }
 
-bool rushToggle = false;
-bool rushLock = false;
-void setRushMech1() {
-    if (rushToggle) {
-        rushMech.set_value(true);
-    } else {
-        rushMech.set_value(false);
-    }
-    
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
-        if (!rushLock) {
-            rushToggle = !rushToggle;
-            rushLock = true;
-        } 
-    } else { rushLock = false; }
+
+// ----------------- Rush stuffs -----------------
+
+void rush_down() {
+    rushMech.set_value(true);
 }
+
+void rush_up() {
+    rushMech.set_value(false);
+}
+
+
+// ----------------- Lady Brown stuffs -----------------
+#define LADY_START 0
+#define LADY_OUT 1
+#define LADY_STOW 2
+#define LADY_UP 3
+#define LADY_COLLECT 4
+#define LADY_JOY 5
+
+int lady_state = LADY_START;
+
+int lady_intake_timer = 0;
+
+#define LADY_JOY_DEADZONE 60
+
+int get_lady_angle() {
+    // returns in degrees from straight up
+    return float(ladyJointSensor.get_angle()) / 100;
+}
+
+void lady_PF_move(float targ) {
+
+    if (targ > LADY_BROWN_MAX_ANGLE) {
+        targ = LADY_BROWN_MAX_ANGLE;
+    }
+    else if (targ < LADY_BROWN_MIN_ANGLE) {
+        targ = LADY_BROWN_MAX_ANGLE;
+    }
+
+    float pos = get_lady_angle();
+
+    float pow = 0;
+
+    float kP = 0.01; // TODO: Tune in kP
+    pow += kP * (targ - pos);
+
+    // controller.print(0, 0, "%f, %f", pos, targ - pos);
+
+    float kF = 0.08;
+    pow += kF * (sin(((LADY_BROWN_UP_ANGLE - pos) * (3.14159/180))));
+
+    ladyBrown.move_voltage(pow * 12000);
+}
+
+void lady_up() {
+    lady_PF_move(LADY_BROWN_UP_ANGLE);
+}
+
+void lady_out() {
+    ladyBrown.move_voltage(10000);
+}
+
+void lady_collect() {
+    lady_PF_move(LADY_BROWN_COLLECT_ANGLE);
+}
+
+bool is_lady_collect() {
+    return get_lady_angle() < LADY_BROWN_COLLECT_ANGLE + 10;
+}
+
+void lady_move(int percent) {
+    ladyBrown.move_voltage(7000 * (percent/100));
+}
+
+void lady_stow() {
+    lady_PF_move(LADY_BROWN_MIN_ANGLE);
+}
+
+void lady_score() {
+    lady_PF_move(LADY_BROWN_SCORE_ANGLE);
+}
+
+void lady_stop() {
+    ladyBrown.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    ladyBrown.move_velocity(0);
+}
+
+
+
 
 void opcontrol() {
 
     
-    while (true) { // infinite loop
+    while (true) {
+
+        // ------------------ Tracking ------------------ 
+
         // print measurements from the rotation sensor
         //pros::lcd::print(1, "Vertical Sensor: %i", .get_position());
         //pros::lcd::print(2, "Horizontal Sensor: %i", hPod.get_position());
         lemlib::Pose pose = chassis.getPose();
-// print the x, y, and theta values of the pose
+        // print the x, y, and theta values of the pose
 
         pros::lcd::print(1, "X: %f", pose.x);
         pros::lcd::print(2, "Y: %f", pose.y);
         pros::lcd::print(3, "Theta: %f", pose.theta);
         pros::delay(10); // delay to save resources. DO NOT REMOVE
-    }
+    
 
-    while (true) {
-        // get left y and right y positions
+
+        // ----------------- Drive stuffs -----------------
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-        //chassis.tank(leftY, rightY);
-        chassis.tank(leftY, rightY);
+        // Slow down 
+        float mult = (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) ? 0.5 : 1.0;
+        chassis.arcade(leftY * mult, rightX * mult);
 
-        setIntake();
-        setClamp1();
-        setRushMech1();
+
+        // ----------------- Intake stuffs -----------------
+        
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) || (lady_state == LADY_OUT & lady_intake_timer > 20)) {
+            intake->outtake();
+        }
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2) || (lady_state == LADY_COLLECT  & is_lady_collect())) {
+            intake->intake();
+        }
+        else {
+            intake->stop();
+        }
+
+        lady_intake_timer++;
+
+
+        // ----------------- Clamp stuffs -----------------
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1) & clamp_count > 50) {
+
+            // Toggle between clampeded and not
+            if (!clamped) {
+                clamp_down();
+                clamped = true;
+            }
+            else {
+                clamp_up();
+                clamped = false;
+            }
+
+            clamp_count = 0; // reset counter
+        }
+        else {
+            clamp_count++;
+        }
+
+        
+        // ----------------- Rush stuffs -----------------
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+            rush_down();
+        }
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+            rush_up();
+        }
+
+
+        // ----------------- Lady Brown stuffs -----------------
+        controller.print(0, 0, "%d, %d", get_lady_angle(), lady_state);
+        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+
+        // Lady Brown Finate State Machine
+        switch(lady_state) {
+            case LADY_START:
+                lady_state = LADY_STOW;
+                break;
+
+            case LADY_STOW:
+
+                lady_stow();
+
+                // Check for moves to other states
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_OUT;
+                }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                    lady_state = LADY_COLLECT;
+                }
+                else if (abs(rightY) > LADY_JOY_DEADZONE) {
+                    lady_state = LADY_JOY;
+                }
+
+                break;
+
+            case LADY_OUT:
+                
+                lady_score();
+
+                // Check for moves to other states
+                if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_STOW;
+                }
+
+                break;
+
+            case LADY_COLLECT:
+
+                lady_collect();
+
+                // Check for moves to other states
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_OUT;
+                    lady_intake_timer = 0;
+                }
+                else if (abs(rightY) > LADY_JOY_DEADZONE) {
+                    lady_state = LADY_JOY;
+                }
+
+                break;
+            
+            case LADY_JOY:
+
+                // Move based on Joy Inputs
+                if (abs(rightY) > LADY_JOY_DEADZONE) {
+                    lady_move(rightY);
+                }
+                else {
+                    lady_stop();
+                }
+
+                // Check for moves to other states
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_OUT;
+                }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                    lady_state = LADY_COLLECT;
+                }
+                break;
+        }
+
 
         // delay to save resources
         pros::delay(10);
