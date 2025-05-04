@@ -200,7 +200,7 @@ void rush_up() {
 #define LADY_STOW 2
 #define LADY_UP 3
 #define LADY_COLLECT 4
-#define LADY_JOY 5
+#define LADY_MANUAL 5
 
 int lady_state = LADY_START;
 
@@ -289,7 +289,6 @@ void opcontrol() {
         pros::lcd::print(1, "X: %f", pose.x);
         pros::lcd::print(2, "Y: %f", pose.y);
         pros::lcd::print(3, "Theta: %f", pose.theta);
-        pros::delay(10); // delay to save resources. DO NOT REMOVE
     
 
 
@@ -299,12 +298,13 @@ void opcontrol() {
 
         // Slow down 
         float mult = (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) ? 0.5 : 1.0;
+
         chassis.arcade(leftY * mult, rightX * mult);
 
 
         // ----------------- Intake stuffs -----------------
         
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) || (lady_state == LADY_OUT & lady_intake_timer > 20)) {
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) || (lady_state == LADY_OUT & lady_intake_timer > 20 & lady_intake_timer < 100)) {
             intake->outtake();
         }
         else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2) || (lady_state == LADY_COLLECT  & is_lady_collect())) {
@@ -318,7 +318,7 @@ void opcontrol() {
 
 
         // ----------------- Clamp stuffs -----------------
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1) & clamp_count > 50) {
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1) & clamp_count > 40) {
 
             // Toggle between clampeded and not
             if (!clamped) {
@@ -368,7 +368,7 @@ void opcontrol() {
                     lady_state = LADY_COLLECT;
                 }
                 else if (abs(rightY) > LADY_JOY_DEADZONE) {
-                    lady_state = LADY_JOY;
+                    lady_state = LADY_MANUAL;
                 }
 
                 break;
@@ -394,12 +394,12 @@ void opcontrol() {
                     lady_intake_timer = 0;
                 }
                 else if (abs(rightY) > LADY_JOY_DEADZONE) {
-                    lady_state = LADY_JOY;
+                    lady_state = LADY_MANUAL;
                 }
 
                 break;
             
-            case LADY_JOY:
+            case LADY_MANUAL:
 
                 // Move based on Joy Inputs
                 if (abs(rightY) > LADY_JOY_DEADZONE) {
