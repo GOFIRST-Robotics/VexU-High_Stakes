@@ -9,8 +9,8 @@
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-pros::adi::Pneumatics clamp('e', false);
-pros::adi::Pneumatics rushMech('f', false);
+pros::adi::Pneumatics clamp('b', false);
+pros::adi::Pneumatics rushMech('h', false);
 
 // left motor group
 pros::MotorGroup left_motor_group({-1, -21, 13}, pros::MotorGears::blue);
@@ -295,23 +295,27 @@ void opcontrol() {
 
 
         // ----------------- Clamp stuffs -----------------
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP) & clamp_count > 40) {
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
 
-            // Toggle between clampeded and not
-            if (!clamped) {
-                clamp_down();
-                clamped = true;
-            }
-            else {
-                clamp_up();
-                clamped = false;
-            }
+            clamp_up();
+
+            // // Toggle between clampeded and not
+            // if (!clamped) {
+            //     clamp_down();
+            //     clamped = true;
+            // }
+            // else {
+            //     clamp_up();
+            //     clamped = false;
+            // }
 
             clamp_count = 0; // reset counter
         }
         else {
             clamp_count++;
         }
+
+        controller.print(0, 0, "%d", clamp_count);
 
         
         // ----------------- Rush stuffs -----------------
@@ -327,7 +331,7 @@ void opcontrol() {
         bool L1_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
         bool L2_pressed = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
 
-        controller.print(0, 0, "%d, %d", intake_second_stage_motor_group.get_current_draw(), lady_state);
+        //controller.print(0, 0, "%d, %d", intake_second_stage_motor_group.get_current_draw(), lady_state);
         // int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
         // Lady Brown Finate State Machine
@@ -341,10 +345,7 @@ void opcontrol() {
                 lady_stow();
 
                 // Check for moves to other states
-                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-                    lady_state = LADY_OUT;
-                }
-                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
                     lady_state = LADY_COLLECT;
                 }
                 else if (L1_pressed || L2_pressed) {
@@ -403,10 +404,7 @@ void opcontrol() {
                 }
 
                 // Check for moves to other states
-                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-                    lady_state = LADY_OUT;
-                }
-                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
                     lady_state = LADY_COLLECT;
                 }
                 break;
