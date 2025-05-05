@@ -323,7 +323,8 @@
       }
     },
     "upload_options": {
-      "description": "15in"
+      "description": "15in",
+      "slot": 2
     },
     "use_early_access": true
   }

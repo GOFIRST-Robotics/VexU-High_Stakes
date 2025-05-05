@@ -6,9 +6,9 @@ Intake::Intake(pros::v5::MotorGroup *lower_intake_stage, pros::v5::MotorGroup *u
 
     color_sensor = colorSensor;
 
-    intake_vel[0] = 12000;
+    intake_vel[0] = 9000;
     intake_vel[1] = 6000;
-    outtake_vel[0] = -12000;
+    outtake_vel[0] = -9000;
     outtake_vel[1] = -6000;
     
     spitting_vel = -100;

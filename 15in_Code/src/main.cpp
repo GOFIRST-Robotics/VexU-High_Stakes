@@ -118,7 +118,7 @@ void initialize() {
     ladyJointSensor.reset_position();
     ladyJointSensor.set_reversed(true);
 
-    intake_color_sensor = new ColorSensor('B', 'A', TC_BLUE);
+    intake_color_sensor = new ColorSensor('C', 'A', TC_BLUE);
     intake = new Intake(&intake_first_stage_motor_group, &intake_second_stage_motor_group, intake_color_sensor);
 }
 
@@ -308,13 +308,15 @@ void opcontrol() {
             intake->outtake();
         }
         else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2) || (lady_state == LADY_COLLECT  & is_lady_collect())) {
-            intake->intake();
+            intake->filtered_intake();
         }
         else {
             intake->stop();
         }
 
         lady_intake_timer++;
+
+        controller.print(0, 0, "%d", intake_color_sensor->sees_opps());
 
 
         // ----------------- Clamp stuffs -----------------
@@ -347,7 +349,6 @@ void opcontrol() {
 
 
         // ----------------- Lady Brown stuffs -----------------
-        controller.print(0, 0, "%d, %d", get_lady_angle(), lady_state);
         int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
         // Lady Brown Finate State Machine

@@ -33,7 +33,7 @@ void Intake::filtered_intake() {
     // Run first stage like normal
     move_lower(intake_vel[0]);
     
-    move_upper((color_sensor->sees_opps()) ? intake_vel[1] : spitting_vel);
+    move_upper((color_sensor->sees_opps()) ? spitting_vel : intake_vel[1] );
 
     // This version of the code below spits for a set time rather than spitting
     // until it no longer sees the opps. 

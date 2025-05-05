@@ -9,7 +9,7 @@
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-pros::adi::Pneumatics clamp('b', false);
+pros::adi::Pneumatics clamp('g', false);
 pros::adi::Pneumatics rushMech('h', false);
 
 // left motor group
@@ -295,25 +295,34 @@ void opcontrol() {
 
 
         // ----------------- Clamp stuffs -----------------
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
-
-            clamp_up();
-
-            // // Toggle between clampeded and not
-            // if (!clamped) {
-            //     clamp_down();
-            //     clamped = true;
-            // }
-            // else {
-            //     clamp_up();
-            //     clamped = false;
-            // }
-
-            clamp_count = 0; // reset counter
-        }
-        else {
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+            clamp_down();
             clamp_count++;
         }
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+            clamp_up();
+            clamp_count++;
+        }
+
+        // if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP) & clamp_count > 20) {
+
+        //     clamp_up();
+
+        //     // Toggle between clampeded and not
+        //     if (!clamped) {
+        //         clamp_down();
+        //         clamped = true;
+        //     }
+        //     else {
+        //         clamp_up();
+        //         clamped = false;
+        //     }
+
+        //     clamp_count = 0; // reset counter
+        // }
+        // else {
+        //     clamp_count++;
+        // }
 
         controller.print(0, 0, "%d", clamp_count);
 
