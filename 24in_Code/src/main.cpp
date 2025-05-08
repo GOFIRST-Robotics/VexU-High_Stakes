@@ -29,7 +29,7 @@ pros::Motor ladyBrown(-6);
 pros::Rotation ladyJointSensor(10);
 const int LADY_BROWN_MAX_ANGLE = 265;
 const int LADY_BROWN_MIN_ANGLE = 17;
-const int LADY_BROWN_COLLECT_ANGLE = 58;
+const int LADY_BROWN_COLLECT_ANGLE = 56;
 const int LADY_BROWN_START_ANGLE = LADY_BROWN_MIN_ANGLE;
 const int LADY_BROWN_SCORE_ANGLE = 200;
 const int LADY_BROWN_UP_ANGLE = 138;

@@ -21,12 +21,14 @@ class Intake {
     ColorSensor *color_sensor;
 
     int intake_state = INTAKE_CLEAR;
-    int intake_state_machine_timer = 0;
+    
 
 public:
 
     Intake(pros::v5::MotorGroup *lower_stage, pros::v5::MotorGroup *upper_stage, ColorSensor *color_sensor);
     Intake(pros::v5::MotorGroup *lower_stage, pros::v5::MotorGroup *upper_stage);
+
+    int intake_state_machine_timer = 0; 
 
     void filtered_intake();
 

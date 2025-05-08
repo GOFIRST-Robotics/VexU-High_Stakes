@@ -32,9 +32,21 @@ void Intake::filtered_intake() {
 
     // Run first stage like normal
     move_lower(intake_vel[0]);
-    
-    move_upper((color_sensor->sees_opps()) ? spitting_vel : intake_vel[1] );
 
+
+    // If the oops are detected, intake opposately
+    if (color_sensor->sees_opps() & intake_state_machine_timer < 60) {
+        intake_state_machine_timer++;
+        move_upper(spitting_vel);
+    }
+    else if (color_sensor->sees_opps()) { // If seeing opps too long, assume false positive/ jammed ring and move normally
+        move_upper(intake_vel[1]);
+    }
+    else { // no opps? intake normally
+        intake_state_machine_timer = 0;
+        move_upper(intake_vel[1]);
+    }
+    
     // This version of the code below spits for a set time rather than spitting
     // until it no longer sees the opps. 
     /*

@@ -40,12 +40,13 @@ pros::MotorGroup intake_second_stage_motor_group({8}, pros::MotorGears::blue);
 //LadyBrown
 pros::Motor ladyBrown(1);
 pros::Rotation ladyJointSensor(10);
-const int LADY_BROWN_MAX_ANGLE = 355;
-const int LADY_BROWN_MIN_ANGLE = 192;
-const int LADY_BROWN_COLLECT_ANGLE = 220;
+const int LADY_BROWN_MAX_ANGLE = 355 - 90;
+const int LADY_BROWN_MIN_ANGLE = 192 - 90;
+const int LADY_BROWN_COLLECT_ANGLE = 220 - 90;
 const int LADY_BROWN_START_ANGLE = LADY_BROWN_MIN_ANGLE; // 100 is all the way back
-const int LADY_BROWN_SCORE_ANGLE = 320;
-const int LADY_BROWN_UP_ANGLE = 295;
+const int LADY_BROWN_SCORE_ANGLE = 350 - 90;
+const int LADY_BROWN_UP_ANGLE = 295 - 90;
+const int LADY_BROWN_DESCORE_ANGLE = 320 - 90;
 
 ColorSensor *intake_color_sensor;
 Intake *intake;
@@ -201,6 +202,7 @@ void rush_up() {
 #define LADY_UP 3
 #define LADY_COLLECT 4
 #define LADY_MANUAL 5
+#define LADY_DESCORE 6
 
 int lady_state = LADY_START;
 
@@ -249,8 +251,13 @@ void lady_collect() {
     lady_PF_move(LADY_BROWN_COLLECT_ANGLE);
 }
 
+void lady_descore() {
+    lady_PF_move(LADY_BROWN_DESCORE_ANGLE);
+}
+
 bool is_lady_collect() {
-    return get_lady_angle() < LADY_BROWN_COLLECT_ANGLE + 10;
+    int lady_ang = get_lady_angle();
+    return lady_ang < LADY_BROWN_COLLECT_ANGLE - 5 + 3 & lady_ang > LADY_BROWN_COLLECT_ANGLE - 5 - 7;
 }
 
 void lady_move(int percent) {
@@ -304,10 +311,13 @@ void opcontrol() {
 
         // ----------------- Intake stuffs -----------------
         
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2) || (lady_state == LADY_OUT & lady_intake_timer > 20 & lady_intake_timer < 100)) {
+        if ((lady_state == LADY_COLLECT & is_lady_collect())) {
+            intake->intake();
+        }
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
             intake->outtake();
         }
-        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2) || (lady_state == LADY_COLLECT  & is_lady_collect())) {
+        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
             intake->filtered_intake();
         }
         else {
@@ -316,7 +326,7 @@ void opcontrol() {
 
         lady_intake_timer++;
 
-        controller.print(0, 0, "%d", intake_color_sensor->sees_opps());
+        controller.print(0, 0, "%d, %d", is_lady_collect(), get_lady_angle());
 
 
         // ----------------- Clamp stuffs -----------------
@@ -340,16 +350,20 @@ void opcontrol() {
 
         
         // ----------------- Rush stuffs -----------------
-        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
             rush_down();
         }
-        else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+        else {
             rush_up();
         }
 
 
         // ----------------- Lady Brown stuffs -----------------
         int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
+
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+            ladyJointSensor.reset_position();
+        }
 
         // Lady Brown Finate State Machine
         switch(lady_state) {
@@ -371,6 +385,9 @@ void opcontrol() {
                 else if (abs(rightY) > LADY_JOY_DEADZONE) {
                     lady_state = LADY_MANUAL;
                 }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+                    lady_state = LADY_DESCORE;
+                }
 
                 break;
 
@@ -382,12 +399,20 @@ void opcontrol() {
                 if (!controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
                     lady_state = LADY_STOW;
                 }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+                    lady_state = LADY_DESCORE;
+                }
 
                 break;
 
             case LADY_COLLECT:
 
-                lady_collect();
+                if (intake_color_sensor->sees_opps()) {
+                    lady_stow();
+                }
+                else {
+                    lady_collect();
+                }
 
                 // Check for moves to other states
                 if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
@@ -396,6 +421,9 @@ void opcontrol() {
                 }
                 else if (abs(rightY) > LADY_JOY_DEADZONE) {
                     lady_state = LADY_MANUAL;
+                }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+                    lady_state = LADY_DESCORE;
                 }
 
                 break;
@@ -417,6 +445,26 @@ void opcontrol() {
                 else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
                     lady_state = LADY_COLLECT;
                 }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+                    lady_state = LADY_DESCORE;
+                }
+
+                break;
+            case LADY_DESCORE:
+
+                lady_descore();
+
+                // Check for moves to other states
+                if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    lady_state = LADY_OUT;
+                }
+                else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                    lady_state = LADY_COLLECT;
+                }
+                else if (abs(rightY) > LADY_JOY_DEADZONE) {
+                    lady_state = LADY_MANUAL;
+                }
+
                 break;
         }
 
