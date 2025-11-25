@@ -1,11 +1,13 @@
 #include "main.h"
 #include "lemlib/chassis/trackingWheel.hpp"
+#include "pros/screen.hpp"
 #include "pros/serial.h"
 #include "pros/serial.hpp"
 #include <memory>
 
 #define BAUDRATE 115200;
 
+pros::Serial serial(10);
 
 
 // // drivetrain settings
@@ -72,7 +74,6 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-    pros::Serial serial(16);
     serial.set_baudrate(115200);
 
 }
@@ -123,8 +124,12 @@ void autonomous() {}
  * task, not resume it from where it left off.
  */
 void opcontrol() {
-  // loop forever
+    // loop forever
 
+    char byte = serial.read_byte();
+    
+    pros::screen::set_pen(pros::Color::blue);
+    pros::screen::print(TEXT_MEDIUM, 3, "%c", &byte);
 
     // delay to save resources
     pros::delay(25);
