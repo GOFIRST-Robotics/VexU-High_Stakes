@@ -126,10 +126,10 @@ void autonomous() {}
 void opcontrol() {
     // loop forever
 
-    char byte = serial.read_byte();
+    char byte = '1';
     
     pros::screen::set_pen(pros::Color::blue);
-    pros::screen::print(TEXT_MEDIUM, 3, "%c", &byte);
+    pros::screen::print(TEXT_MEDIUM, 3, "Recieved text: %c", &byte);
 
     // delay to save resources
     pros::delay(25);
