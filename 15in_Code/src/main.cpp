@@ -1,15 +1,12 @@
 #include "main.h"
 #include "lemlib/chassis/trackingWheel.hpp"
+#include "pros/serial.h"
+#include "pros/serial.hpp"
 #include <memory>
-pros::MotorGroup
-    left_motors({1, -2, 3, -4, 5},
-                pros::MotorGearset::blue); // left motors use 600 RPM cartridges
-pros::MotorGroup right_motors(
-    {-6, 7, -8, 9, -10},
-    pros::MotorGearset::blue); // right motors use 200 RPM cartridges
 
-pros::MotorGroup intake_first_stage_motor_group({10}, pros::MotorGears::green);
-pros::MotorGroup intake_first_stage_filter_motor_group({9}, pros::MotorGears::green);
+#define BAUDRATE 115200;
+
+
 
 // // drivetrain settings
 // lemlib::Drivetrain
@@ -74,7 +71,11 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {}
+void initialize() {
+    pros::Serial serial(16);
+    serial.set_baudrate(115200);
+
+}
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -108,25 +109,6 @@ void competition_initialize() {}
 void autonomous() {}
 
 
-// ----------------- Intake stuffs -----------------
-
-void intake_normal() {
-    intake_first_stage_motor_group.move_voltage(-12000);
-    intake_first_stage_filter_motor_group.move_voltage(12000);
-}
-
-void intake_filter() {
-    intake_first_stage_motor_group.move_voltage(-12000);
-    intake_first_stage_filter_motor_group.move_voltage(-12000);
-}
-
-void intake_stop() {
-    intake_first_stage_motor_group.move_voltage(00);
-    intake_first_stage_filter_motor_group.move_voltage(00);
-}
-
-
-
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -142,18 +124,9 @@ void intake_stop() {
  */
 void opcontrol() {
   // loop forever
-  while (true) {
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
-        intake_normal();
-    }
-    else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
-        intake_filter();
-    }
-    else {
-        intake_stop();
-    }
+
 
     // delay to save resources
     pros::delay(25);
-  }
+  
 }
