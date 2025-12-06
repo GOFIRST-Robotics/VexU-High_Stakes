@@ -1,5 +1,7 @@
 #include "main.h"
 #include "lemlib/chassis/trackingWheel.hpp"
+#include "liblvgl/llemu.hpp"
+#include "pros/llemu.hpp"
 #include "pros/screen.hpp"
 #include "pros/serial.h"
 #include "pros/serial.hpp"
@@ -7,7 +9,7 @@
 
 #define BAUDRATE 115200;
 
-pros::Serial serial(10);
+pros::Serial serial(13);
 
 
 // // drivetrain settings
@@ -76,6 +78,7 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 void initialize() {
     serial.set_baudrate(115200);
 
+    pros::lcd::initialize();
 }
 
 /**
@@ -126,10 +129,9 @@ void autonomous() {}
 void opcontrol() {
     // loop forever
 
-    char byte = '1';
+    char byte = 'a';
     
-    pros::screen::set_pen(pros::Color::blue);
-    pros::screen::print(TEXT_MEDIUM, 3, "Recieved text: %c", &byte);
+    pros::lcd::print(1, "Recieved byte: %c", byte);
 
     // delay to save resources
     pros::delay(25);
