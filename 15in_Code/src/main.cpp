@@ -9,7 +9,7 @@
 
 #define BAUDRATE 115200;
 
-pros::Serial serial(13);
+pros::Serial serial(14);
 
 
 // // drivetrain settings
@@ -129,9 +129,10 @@ void autonomous() {}
 void opcontrol() {
     // loop forever
 
-    char byte = 'a';
+   // char readIN = serial.read_byte();
+   if (serial.avaiLbkw)
     
-    pros::lcd::print(1, "Recieved byte: %c", byte);
+    pros::lcd::print(0, "Recieved byte: %d", serial.read_byte());
 
     // delay to save resources
     pros::delay(25);
