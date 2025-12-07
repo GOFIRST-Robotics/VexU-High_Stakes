@@ -1,84 +1,32 @@
 #include "main.h"
-#include "lemlib/chassis/trackingWheel.hpp"
-#include "liblvgl/llemu.hpp"
-#include "pros/llemu.hpp"
-#include "pros/screen.hpp"
-#include "pros/serial.h"
-#include "pros/serial.hpp"
-#include <memory>
+#include "lemlib/api.hpp"
 
-#define BAUDRATE 115200;
-
-pros::Serial serial(14);
+pros::Serial *serialPort = new pros::Serial(14);
 
 
-// // drivetrain settings
-// lemlib::Drivetrain
-//     drivetrain(&left_motors,               // left motor group
-//                &right_motors,              // right motor group
-//                10,                         // 10 inch track width
-//                lemlib::Omniwheel::NEW_275, // using new 2.75" omnis
-//                360,                        // drivetrain rpm is 360
-//                2                           // horizontal drift is 2 (for now)
-//     );
 
-// pros::Imu imu_sensor(10);
-// lemlib::OdomSensors sensors(
-//     nullptr, // vertical tracking wheel 1, set to null
-//     nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-//     nullptr, // horizontal tracking wheel 1
-//     nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a
-//              // second one
-//     &imu_sensor // inertial sensor
-// );
+//flush the comm ports
+void flush(){
 
-// // lateral PID controller
-// lemlib::ControllerSettings
-//     lateral_controller(10,  // proportional gain (kP)
-//                        0,   // integral gain (kI)
-//                        3,   // derivative gain (kD)
-//                        3,   // anti windup
-//                        1,   // small error range, in inches
-//                        100, // small error range timeout, in milliseconds
-//                        3,   // large error range, in inches
-//                        500, // large error range timeout, in milliseconds
-//                        20   // maximum acceleration (slew)
-//     );
+  serialPort->flush();
+}
 
-// // angular PID controller
-// lemlib::ControllerSettings
-//     angular_controller(2,   // proportional gain (kP)
-//                        0,   // integral gain (kI)
-//                        10,  // derivative gain (kD)
-//                        3,   // anti windup
-//                        1,   // small error range, in degrees
-//                        100, // small error range timeout, in milliseconds
-//                        3,   // large error range, in degrees
-//                        500, // large error range timeout, in milliseconds
-//                        0    // maximum acceleration (slew)
-//     );
+//set the port baud rate
+void setBaud(){
+  serialPort->set_baudrate(115200);
 
-// // create the chassis
-// lemlib::Chassis chassis(drivetrain,         // drivetrain settings
-//                         lateral_controller, // lateral PID settings
-//                         angular_controller, // angular PID settings
-//                         sensors             // odometry sensors
+}
 
-// );
-
-// Tank drive
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
-
-/**
+ /*
  * Runs initialization code. This occurs as soon as the program is started.
  *
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-    serial.set_baudrate(115200);
-
-    pros::lcd::initialize();
+	flush();
+	pros::delay(10);
+	setBaud();
 }
 
 /**
@@ -110,7 +58,8 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+}
 
 
 /**
@@ -126,15 +75,32 @@ void autonomous() {}
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+
+void recv_print(){
+  //Read byte command
+  int32_t r = serialPort->read_byte();
+  //Check if error
+  if(r == PROS_ERR){
+    std::cout << pros::millis() << " Error read " << r << std::endl;
+  } else {
+    //Print recieved byte
+    std::cout << pros::millis() << " Pass read " << r << std::endl;
+  }
+}
+
+void send_print(int value){
+	//Send the value byte
+  int32_t w = serialPort->write_byte(value);
+	std::cout << "Sent Value " << value << std::endl;
+  pros::delay(3);
+}
 void opcontrol() {
-    // loop forever
-
-   // char readIN = serial.read_byte();
-   if (serial.avaiLbkw)
     
-    pros::lcd::print(0, "Recieved byte: %d", serial.read_byte());
+    	//Send and recieve alphabet as a test
+	for(int i = 65; i <= 90; i++){
+		send_print(i);
+		recv_print();
+		pros::delay(97);
+    }
 
-    // delay to save resources
-    pros::delay(25);
-  
 }
