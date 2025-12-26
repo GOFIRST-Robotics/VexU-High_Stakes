@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "15in_Code",
+    "project_name": "tootyfart",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -324,7 +324,8 @@
     },
     "upload_options": {
       "description": "15in",
-      "slot": 2
+      "slot": 2,
+      "icon": "pizza"
     },
     "use_early_access": true
   }
